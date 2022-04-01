@@ -67,6 +67,11 @@ def main(argv):
     run(in_file,out_file)
 
 def run(in_file,out_file):
+    # get file folder
+    folder = "/".join(in_file.split('/')[:-1])
+    if len(folder) > 0:
+        folder+='/'
+    
     pc  = 0
     variables = {}
     labels = {}
@@ -76,6 +81,7 @@ def run(in_file,out_file):
     with open(in_file) as f:
         lines = f.readlines()
         i = 0
+        # 1st Pass -> Read and Parse tokens
         while i < len(lines):
             line=lines[i]
             # Remove comments
@@ -83,7 +89,6 @@ def run(in_file,out_file):
                 line = line[:line.find(";")]
             # Get Tokens for this line
             tokens = re.findall(r'".+"|[^,\s]+', line.strip())
-            print(tokens)
             if len(tokens)>=1:
                 if len(tokens[0]) == 0:
                     continue
@@ -96,7 +101,6 @@ def run(in_file,out_file):
                             indent+=1
                     if indent <= len(cur_label):
                         cur_label = cur_label[:indent] + [label.strip('_')]
-                    print(cur_label)
                     labels["_".join(cur_label)]=pc
                 elif tokens[0] in syntax.opcodes:
                     opcode = tokens[0]
@@ -121,8 +125,8 @@ def run(in_file,out_file):
                                         if type(value) is int:
                                             to_append.append(value & 255)
                                         else:
-                                            label = '_'.join(cur_label[:-1]) + "_" + values[0]
-                                            to_append.append(label)
+                                            #label = '_'.join(cur_label[:-1]) + "_" + values[0]
+                                            to_append.append(values[0])
                                     elif symbol == "ah":
                                         value = value_parse(values[0])[0]
                                         if type(value) is int:
@@ -144,8 +148,9 @@ def run(in_file,out_file):
                                                 to_append.append(v[0])
                                                 to_append.append("&high")
                                     elif symbol == "r":
-                                        label = '_'.join(cur_label[:-1]) + "_" + values[0]
-                                        to_append.append([label,pc+2])
+                                        #label = '_'.join(cur_label[:-1]) + "_" + values[0]
+                                        #to_append.append([label,pc+2])
+                                        to_append.append([values[0],pc+2])
                             if opcode == "org":
                                 pc = value_parse(values[0])[0]
                             if opcode == "pad":
@@ -158,10 +163,10 @@ def run(in_file,out_file):
                             if opcode == "var":
                                 variables[values[0]]=value_parse(values[1])[0]
                             if opcode == "asm":
-                                with open(values[0].strip('"'),"r") as f:
+                                with open(folder+values[0].strip('"'),"r") as f:
                                     lines = lines[:i+1] + f.readlines() + lines[i+1:]
                             if opcode == "bin":
-                                with open(values[0].strip('"'),"rb") as f:
+                                with open(folder+values[0].strip('"'),"rb") as f:
                                     bindata = f.read()
                                     out.extend(bindata)
                         else:
@@ -174,7 +179,6 @@ def run(in_file,out_file):
             i+=1
 
     # 2nd Pass -> Add labels and variables
-    print(labels,variables,out)
     for i,s in enumerate(out):
         if type(s) is str:
             value = 0
