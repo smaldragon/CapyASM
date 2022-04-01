@@ -45,22 +45,17 @@ _vblankwait2
     bit [PPUSTATUS]
     bpl (vblankwait2)
 
-    ;lda %00000100
-    ;sta [PPUCTRL]
-    
+    ; Define Palette Colors    
     lda $3F
     sta [PPUADDR]
     lda $00
     sta [PPUADDR]
     lda $15
     sta [PPUDATA]
-    ;lda $3F
-    ;sta [PPUADDR]
-    ;lda $01
-    ;sta [PPUADDR]
     lda $20
     sta [PPUDATA]
 
+    ; Define Cursor Position
     lda $21
     sta [PPUADDR]
     lda $AA
