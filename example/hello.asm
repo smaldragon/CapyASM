@@ -91,7 +91,7 @@ _vblankwait2
     sta [PPUSCROLL]
 
     ; Activate Background
-    lda %00011010
+    lda %000_11_11_0
     sta [PPUMASK]
 
 _forever

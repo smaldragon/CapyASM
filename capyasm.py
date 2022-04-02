@@ -43,7 +43,7 @@ def value_parse(symbol):
     except:
         return [symbol]
 symbol_split = re.compile(".*,?")
-value_get = re.compile('".+"|\$*%*@*[0-9a-zA-Z]+')
+value_get = re.compile('".+"|\$*%*@*[0-9a-zA-Z_]+')
 modes=[]
 for regex in syntax.addr:
     modes.append((re.compile(regex),syntax.addr[regex]))
