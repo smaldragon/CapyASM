@@ -1,7 +1,5 @@
 # CapyASM
 
-![link](https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/Cattle_tyrant_%28Machetornis_rixosa%29_on_Capybara.jpg/640px-Cattle_tyrant_%28Machetornis_rixosa%29_on_Capybara.jpg)
-
 **CapyASM** is a 65c02 assembler built as a learning exercise. Its syntax, particularly in regards to addressing modes, differs from the typical 65xx syntax, with the goal of trying to make the instructions more explicit and easy to understand.
 
 > Note: This assembler is very much a WIP, I do not recommend using it in serious projects.
