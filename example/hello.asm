@@ -9,6 +9,11 @@
 
     asm "nes_registers.asm"
 
+macro wrb
+    lda {0}
+    sta {1}
+endmacro
+
 ; Prg ROM
     org [$8000]
 _reset
@@ -45,47 +50,31 @@ _vblankwait2
     bit [PPUSTATUS]
     bpl (vblankwait2)
 
-    ; Define Palette Colors    
-    lda $3F
-    sta [PPUADDR]
-    lda $00
-    sta [PPUADDR]
-    lda $15
-    sta [PPUDATA]
-    lda $20
-    sta [PPUDATA]
-
+    ; Define Palette Colors
+    wrb $3F,[PPUADDR]   
+    wrb $00,[PPUADDR]
+    wrb $15,[PPUDATA]
+    wrb $20,[PPUDATA]
+    
     ; Define Cursor Position
-    lda $21
-    sta [PPUADDR]
-    lda $AA
-    sta [PPUADDR]
-    lda 1           
-    sta [PPUDATA]   ; H
-    lda 2           
-    sta [PPUDATA]   ; E
-    lda 3           
-    sta [PPUDATA]   ; L
-    sta [PPUDATA]   ; L
-    lda 4
-    sta [PPUDATA]   ; O
+    wrb $21,[PPUADDR]
+    wrb $AA,[PPUADDR]
     
-    lda 0
-    sta [PPUDATA]   ; ' '
+    ; Write text
+    wrb 1,[PPUDATA] ; H
+    wrb 2,[PPUDATA] ; E
+    wrb 3,[PPUDATA] ; L
+    sta   [PPUDATA] ; L
+    wrb 4,[PPUDATA] ; O
+    wrb 0,[PPUDATA] ; ' '
+    wrb 5,[PPUDATA] ; W
+    wrb 4,[PPUDATA] ; O
+    wrb 6,[PPUDATA] ; R
+    wrb 3,[PPUDATA] ; L
+    wrb 7,[PPUDATA] ; D
+    wrb 8,[PPUDATA] ; heart
 
-    lda 5
-    sta [PPUDATA]   ; W
-    lda 4
-    sta [PPUDATA]   ; O
-    lda 6
-    sta [PPUDATA]   ; R
-    lda 3           
-    sta [PPUDATA]   ; L
-    lda 7           
-    sta [PPUDATA]   ; D
-    lda 8
-    sta [PPUDATA]   ; heart
-    
+    ; Set scroll
     lda $00
     sta [PPUSCROLL]
     sta [PPUSCROLL]

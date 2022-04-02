@@ -48,6 +48,9 @@ opcodes = {
     "bin":{
         "#" : []
     },
+    "macro":{
+        "#":  []
+    },
     # opcodes
     "adc":{
         "a":    [0x6D,"al","ah"],

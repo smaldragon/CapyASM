@@ -32,7 +32,21 @@
 * `org [$xx]`          - Sets the Program Counter
 * `pad $xx|pad $[xx]`  - Adds zeros to the file, either a set amount or until a certain PC is reached
 * `var $xx`            - Define variable
+* `macro name $xx,$xx` - Define Macro
 
 ## Labels
 
 Labels are defined with a `_` prefix.
+
+## Macros
+
+Macros are defined with the symbol `macro` and terminated with `endmacro`. The contents of a macro are code with opcional content to be replaced by arguments written between curly braces. Here is an example macro for writing a byte to memory:
+
+```
+macro wrb
+    lda {0}
+    sta {1}
+endmacro
+
+    wrb $20,[$2000]
+```
