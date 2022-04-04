@@ -41,8 +41,8 @@ In CapyASM the type of addressing to be used is always written explicitly, avoid
 
 In addition to the traditional opcode mnemonics, CapyASM also provides some alternative mnemonics for certain instructions:
 
-* `bcc` - Branch on carry clear
-* `bcs` - Branch on carry set
+* `bzc` - Branch on zero clear
+* `bzs` - Branch on zero set
 * `bnc` - Branch on negative clear
 * `bns` - Branch on negative set
 * `xor` - Exclusive-Or
