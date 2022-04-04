@@ -12,6 +12,8 @@
 
 ## Addressing Modes
 
+In CapyASM the type of addressing to be used is always written explicitly, avoiding ambiguity. Immediate values are written without decoration, memory/absolute values are written between `[]` brackets, zero page is written between `<>` brackets and relative addressing is written between `()` brackets. 
+
 * **Implied** - `RTS`
 * **Registers** - `PSH A | PSH X | PSH Y | PSH P`
 * **Immediate** - `LDA $20`
@@ -24,7 +26,6 @@
 * **Indexed Indirect** - `LDA [<$10+x>]`
 * **Indirect Indexed** - `LDA [<$10>+y]`
 
-
 ## Assembler Commands
 
 * `byte $xx,$xx,(...)` - Inserts binary byte data
@@ -36,9 +37,21 @@
 * `var $xx`            - Define variable
 * `macro name $xx,$xx` - Define Macro
 
+## Aliases
+
+In addition to the traditional opcode mnemonics, CapyASM also provides some alternative mnemonics for certain instructions:
+
+* `bcc` - Branch on carry clear
+* `bcs` - Branch on carry set
+* `bnc` - Branch on negative clear
+* `bns` - Branch on negative set
+* `xor` - Exclusive-Or
+* `inc A/X/Y` - Increment register
+* `dec A/X/Y` - Decrement register
+
 ## Labels
 
-Labels are defined with a `_` prefix. Labels have namespaces that are determined by the amount of `_` symbols in their name, for example:
+Labels are defined using a `_` prefix. Labels have namespaces that are determined by the amount of `_` symbols in their name, for example:
 
 ```
 _reset
@@ -51,7 +64,7 @@ _nmi
 __loop
   bne loop
   
-; Both `_reset` and `_nmi` have a `__loop` label inside them. 
+; Both `_reset` and `_nmi` have a `__loop` label inside them
 ```
 
 ## Macros
