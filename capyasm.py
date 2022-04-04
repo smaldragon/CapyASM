@@ -43,7 +43,7 @@ def value_parse(symbol):
     except:
         return [symbol]
 symbol_split = re.compile(".*,?")
-value_get = re.compile('".+"|\$*%*@*[^<>\[\]\(\)\+]+')
+value_get = re.compile(f'".+"|{syntax.value}')
 modes=[]
 for regex in syntax.addr:
     modes.append((re.compile(regex),syntax.addr[regex]))
@@ -173,7 +173,7 @@ def run(in_file,out_file):
                                 if opcode == "macro":
                                     in_macro = values[0]
                             else:
-                                print(f'\033[91m'+f"@{i} ERROR: Opcode '{opcode}' does not have addressing mode '{regex[1]}'")
+                                print(f'\033[91m'+f"@{i} ERROR: Opcode '{opcode}' does not have addressing mode '{addr}'")
                             
                             out.append((to_append,cur_label))
                         pc += len(to_append)
