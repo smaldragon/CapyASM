@@ -1,6 +1,8 @@
 # CapyASM
 
-**CapyASM** is a 65c02 assembler built as a learning exercise. Its syntax, particularly in regards to addressing modes, differs from the typical 65xx syntax, with the goal of trying to make the instructions more explicit and easy to understand.
+![link](https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/Cattle_tyrant_%28Machetornis_rixosa%29_on_Capybara.jpg/640px-Cattle_tyrant_%28Machetornis_rixosa%29_on_Capybara.jpg)
+
+**CapyASM** is a 65c02 assembler written in Python built as a learning exercise. Its syntax, particularly in regards to addressing modes, differs from the typical 65xx syntax, with the goal of trying to make the instructions more explicit and easy to understand.
 
 > Note: This assembler is very much a WIP, I do not recommend using it in serious projects.
 
@@ -9,6 +11,8 @@
 `python3 capyasm.py -i input.asm -o output.asm`
 
 ## Addressing Modes
+
+In CapyASM the type of addressing to be used is always written explicitly, avoiding ambiguity. Immediate values are written without decoration, memory/absolute values are written between `[]` brackets, zero page is written between `<>` brackets and relative addressing is written between `()` brackets. 
 
 * **Implied** - `RTS`
 * **Registers** - `PSH A | PSH X | PSH Y | PSH P`
@@ -22,11 +26,10 @@
 * **Indexed Indirect** - `LDA [<$10+x>]`
 * **Indirect Indexed** - `LDA [<$10>+y]`
 
-
 ## Assembler Commands
 
-* `byte $xx,$xx,(...)` - Inserts binary byte data
-* `word $xxxx,$xxxx,(...)`   - Inserts binary word data
+* `byte $xx,$xx,(...)` - Inserts 8-bit data
+* `word $xxxx,$xxxx,(...)`   - Inserts 16-bit data (little-endian) 
 * `bin "file.bin"`     - Inserts a binary file
 * `asm "file.asm"`     - Inserts an assembly file
 * `org [$xx]`          - Sets the Program Counter
@@ -34,9 +37,35 @@
 * `var $xx`            - Define variable
 * `macro name $xx,$xx` - Define Macro
 
+## Aliases
+
+In addition to the traditional opcode mnemonics, CapyASM also provides some alternative mnemonics for certain instructions:
+
+* `bzc` - Branch on zero clear
+* `bzs` - Branch on zero set
+* `bnc` - Branch on negative clear
+* `bns` - Branch on negative set
+* `xor` - Exclusive-Or
+* `inc A/X/Y` - Increment register
+* `dec A/X/Y` - Decrement register
+
 ## Labels
 
-Labels are defined with a `_` prefix.
+Labels are defined using a `_` prefix. Labels have namespaces that are determined by the amount of `_` symbols in their name, for example:
+
+```
+_reset
+  (...) ;do things
+__loop
+  jmp loop
+  
+_nmi
+  (...) ;do things
+__loop
+  bne loop
+  
+; Both `_reset` and `_nmi` have a `__loop` label inside them
+```
 
 ## Macros
 
