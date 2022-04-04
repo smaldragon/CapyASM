@@ -129,7 +129,6 @@ def run(in_file,out_file):
                                             if type(value) is int:
                                                 to_append.append(value & 255)
                                             else:
-                                                #label = '_'.join(cur_label[:-1]) + "_" + values[0]
                                                 to_append.append(values[0])
                                         elif symbol == "ah":
                                             value = value_parse(values[0])[0]
@@ -152,8 +151,6 @@ def run(in_file,out_file):
                                                     to_append.append(v[0])
                                                     to_append.append("&high")
                                         elif symbol == "r":
-                                            #label = '_'.join(cur_label[:-1]) + "_" + values[0]
-                                            #to_append.append([label,pc+2])
                                             to_append.append([values[0],pc+2])
                                 if opcode == "org":
                                     pc = value_parse(values[0])[0]
@@ -178,7 +175,7 @@ def run(in_file,out_file):
                             else:
                                 print(f"ERROR: Opcode '{opcode}' does not have addressing mode '{regex[1]}'")
                             
-                            out.extend(to_append)
+                            out.append((to_append,cur_label))
                         pc += len(to_append)
                     elif tokens[0] in macros:
                         lines = lines[:i+1] + macros[tokens[0]].format(*(tokens[1:])).split("\n") + lines[i+1:]
@@ -196,22 +193,47 @@ def run(in_file,out_file):
 
     # 2nd Pass -> Add labels and variables
     for i,s in enumerate(out):
-        if type(s) is str:
+        for u,b in enumerate(s[0]):
+            # Converts a string into its corresponding var/label value
+            def get_value(name,s):
+                value = -1
+                if name in variables:
+                    value = variables[name]        
+                else:
+                    space = s[1]
+                    while len(space)>0:
+                        to_try = "_".join(space) + "_" + name
+                        if to_try in labels:
+                            value = labels[to_try]
+                            break
+                        space.pop()
+                    if value == -1:
+                        if name in labels:
+                            value = labels[name]
+                return value
+
+            name = None
             value = 0
-            if s in labels:
-                value = labels[s]
-            if s in variables:
-                value = variables[s]
+            if type(b) is int:
+                continue
+            # Absolute Value
+            elif type(b) is str:
+                name = b
+                value = get_value(name,s)
+                s[0][u] = value & 255  
+                if u+1 < len(s[0]) and s[0][u+1] == "&high":
+                    s[0][u+1] = value>>8  
+            # Relative Value
+            elif type(b) is list:
+                name = b[0]
+                value = get_value(name,s) - b[1]
+                if value < 0:
+                    value += 256
+                s[0][u] = value
             
-            out[i] = value&255
-            if i+1 < len(out) and out[i+1] == "&high":
-                out[i+1] = value>>8            
-        elif type(s) is list:
-            out[i]   = labels[s[0]]-s[1]
-            if out[i] < 0:
-                out[i] = 256+out[i]
     with open(out_file,"wb") as f:
-        f.write(bytearray(out))
+        for b in out:
+            f.write(bytearray(b[0]))
     
 if __name__ == "__main__":
    main(sys.argv[1:])

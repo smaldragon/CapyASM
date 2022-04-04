@@ -30,11 +30,11 @@ _reset
 
     bit [PPUSTATUS]
 
-_vblankwait1
+__vblankwait1
     bit [PPUSTATUS]
     bpl (vblankwait1)
 
-_clrmem
+__clrmem
     sta <$0000+x>
     sta [$0100+x]
     sta [$0200+x]
@@ -46,7 +46,7 @@ _clrmem
     inx
     bne (clrmem)
 
-_vblankwait2
+__vblankwait2
     bit [PPUSTATUS]
     bpl (vblankwait2)
 
@@ -83,7 +83,7 @@ _vblankwait2
     lda %000_11_11_0
     sta [PPUMASK]
 
-_forever
+__forever
     jmp [forever]
 
 ; Vectors
