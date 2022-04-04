@@ -30,6 +30,13 @@ In CapyASM the type of addressing to be used is always written explicitly, avoid
 * **Indexed Indirect** - `LDA [<$10+x>]`
 * **Indirect Indexed** - `LDA [<$10>+y]`
 
+## Data types
+
+* `29` - Decimal
+* `$29` - Hexadecimal
+* `%11110000` - Binary
+* `"Hello World"` - ASCII
+
 ## Assembler Commands
 
 * `byte $xx,$xx,(...)` - Inserts 8-bit data
