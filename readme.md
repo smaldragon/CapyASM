@@ -6,6 +6,10 @@
 
 > Note: This assembler is very much a WIP, I do not recommend using it in serious projects.
 
+## Examples
+
+The `examples` folder contains source code for several NES roms, these are being used to test the assembler.
+
 ## Usage
 
 `python3 capyasm.py -i input.asm -o output.asm`
