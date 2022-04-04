@@ -150,11 +150,11 @@ __ball_loop
     sec
     sbc 4
     tax
-    wrb [ball_hist_y+x],[$200+y]
+    wrb [ball_hist_y+x],[shadow_oam+y]
     iny
     iny
     iny
-    wrb [ball_hist_x+x],[$200+y]
+    wrb [ball_hist_x+x],[shadow_oam+y]
     iny
     bzc (ball_loop)
     rti
