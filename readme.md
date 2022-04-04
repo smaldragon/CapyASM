@@ -28,8 +28,8 @@ In CapyASM the type of addressing to be used is always written explicitly, avoid
 
 ## Assembler Commands
 
-* `byte $xx,$xx,(...)` - Inserts binary byte data
-* `word $xxxx,$xxxx,(...)`   - Inserts binary word data
+* `byte $xx,$xx,(...)` - Inserts 8-bit data
+* `word $xxxx,$xxxx,(...)`   - Inserts 16-bit data (little-endian) 
 * `bin "file.bin"`     - Inserts a binary file
 * `asm "file.asm"`     - Inserts an assembly file
 * `org [$xx]`          - Sets the Program Counter
