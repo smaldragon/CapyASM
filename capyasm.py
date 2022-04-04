@@ -43,7 +43,7 @@ def value_parse(symbol):
     except:
         return [symbol]
 symbol_split = re.compile(".*,?")
-value_get = re.compile('".+"|\$*%*@*[0-9a-zA-Z_]+')
+value_get = re.compile('".+"|\$*%*@*[^<>\[\]\(\)\+]+')
 modes=[]
 for regex in syntax.addr:
     modes.append((re.compile(regex),syntax.addr[regex]))
@@ -157,10 +157,10 @@ def run(in_file,out_file):
                                 if opcode == "pad":
                                     if addr == "a":
                                         to_append = [0]*(value_parse(values[0])[0]-pc)
-                                        print("padded",(value_parse(values[0])[0]-pc),"bytes")
+                                        print('\033[93m'+"padded",(value_parse(values[0])[0]-pc),"bytes")
                                     if addr == "#":
                                         to_append = [0]*(value_parse(values[0])[0])                
-                                        print("padded",(value_parse(values[0])[0]),"bytes")
+                                        print('\033[93m'+"padded",(value_parse(values[0])[0]),"bytes")
                                 if opcode == "var":
                                     variables[values[0]]=value_parse(values[1])[0]
                                 if opcode == "asm":
@@ -173,14 +173,14 @@ def run(in_file,out_file):
                                 if opcode == "macro":
                                     in_macro = values[0]
                             else:
-                                print(f"ERROR: Opcode '{opcode}' does not have addressing mode '{regex[1]}'")
+                                print(f'\033[91m'+f"@{i} ERROR: Opcode '{opcode}' does not have addressing mode '{regex[1]}'")
                             
                             out.append((to_append,cur_label))
                         pc += len(to_append)
                     elif tokens[0] in macros:
                         lines = lines[:i+1] + macros[tokens[0]].format(*(tokens[1:])).split("\n") + lines[i+1:]
                     else:
-                        print("ERROR: INVALID TOKEN",tokens[0])
+                        print('\033[91m'+f"@{i} ERROR: INVALID TOKEN",tokens[0])
             # Macro
             else:
                 if "endmacro" in line:
@@ -232,8 +232,11 @@ def run(in_file,out_file):
                 s[0][u] = value
             
     with open(out_file,"wb") as f:
-        for b in out:
-            f.write(bytearray(b[0]))
+        for l in out:
+            for b in l[0]:
+                if b < 0:
+                    b+=256
+                f.write(bytearray([b]))
     
 if __name__ == "__main__":
    main(sys.argv[1:])
