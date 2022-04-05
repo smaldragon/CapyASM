@@ -12,8 +12,8 @@ addr = {
     #"":"s",
     
     f"(?i)<{value}>\s*:\s*\({value}\)":"zr",
-    f"(?i)\({value}\)[^:]*":"r",
-    f"[(?i)<{value}>[^:]*]":"z",
+    f"(?i)\({value}\)$":"r",
+    f"(?i)<{value}>$":"z",
     f"(?i)\[<{value}\+x>\]":"(z+x)",
     f"(?i)<{value}\+x>":"z+x",
     f"(?i)<{value}\+y>":"z+y",
