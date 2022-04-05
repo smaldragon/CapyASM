@@ -116,28 +116,32 @@ def run(in_file,out_file):
                                 for regex in modes:
                                     if regex[0].match(operand):
                                         addr = regex[1]
-                                values.append(value_get.search(operand).group())
+                                values.extend(value_get.findall(operand))
                             if addr in syntax.opcodes[opcode]:
+                                value_index = 0
                                 for symbol in syntax.opcodes[opcode][addr]:
                                     if type(symbol) is int:
                                         to_append.append(symbol)
                                     else:
                                         if symbol == "#":
-                                            to_append.extend(value_parse(values[0]))
+                                            to_append.extend(value_parse(values[value_index]))
+                                            value_index+=1
                                         elif symbol == "al":
-                                            value = value_parse(values[0])[0]
+                                            value = value_parse(values[value_index])[0]
                                             if type(value) is int:
                                                 to_append.append(value & 255)
                                             else:
-                                                to_append.append(values[0])
+                                                to_append.append(values[value_index])
                                         elif symbol == "ah":
-                                            value = value_parse(values[0])[0]
+                                            value = value_parse(values[value_index])[0]
                                             if type(value) is int:
                                                 to_append.append(value >> 8)
                                             else:
                                                 to_append.append("&high")
+                                            value_index+=1
                                         elif symbol == "z":
-                                            to_append.extend(value_parse(values[0]))
+                                            to_append.extend(value_parse(values[value_index]))
+                                            value_index+=1
                                         elif symbol == "*":
                                             for value in values:
                                                 to_append.extend(value_parse(value))
@@ -151,7 +155,7 @@ def run(in_file,out_file):
                                                     to_append.append(v[0])
                                                     to_append.append("&high")
                                         elif symbol == "r":
-                                            to_append.append([values[0],pc+2])
+                                            to_append.append([values[value_index],pc+2+value_index])
                                 if opcode == "org":
                                     pc = value_parse(values[0])[0]
                                 if opcode == "pad":

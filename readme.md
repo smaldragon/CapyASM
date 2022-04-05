@@ -20,7 +20,7 @@ In CapyASM the type of addressing to be used is always written explicitly, avoid
 
 * **Implied** - `RTS`
 * **Registers** - `PSH A | PSH X | PSH Y | PSH P`
-* **Immediate** - `LDA $20`
+* **Immediate** - `LDA 20`
 * **Relative** - `BRA (label)`
 * **Absolute** - `LDA [$2000]`
 * **Zero Page** - `LDA <$20>`
@@ -29,6 +29,7 @@ In CapyASM the type of addressing to be used is always written explicitly, avoid
 * **Zero Page Indexed** - `LDA <$10+x>`
 * **Indexed Indirect** - `LDA [<$10+x>]`
 * **Indirect Indexed** - `LDA [<$10>+y]`
+* **Zero Page Relative** - `BBR4 <$20>:(label)`
 
 ## Data types
 
@@ -59,6 +60,8 @@ In addition to the traditional opcode mnemonics, CapyASM also provides some alte
 * `xor` - Exclusive-Or
 * `inc A/X/Y` - Increment register
 * `dec A/X/Y` - Decrement register
+* `bbc0` - Branch on Bit Clear
+* `tcb` - Test and Clear Bit 
 
 ## Labels
 
