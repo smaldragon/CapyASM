@@ -48,13 +48,16 @@ modes=[]
 for regex in syntax.addr:
     modes.append((re.compile(regex),syntax.addr[regex]))
 
+
+
 def main(argv):
     in_file = ''
     out_file = ''
+    verbose = False
     try:
-        opts, args = getopt.getopt(argv,"hi:o:",["ifile=","ofile="])
+        opts, args = getopt.getopt(argv,"vhi:o:",["ifile=","ofile=","verbose"])
     except getopt.GetoptError:
-        print ('capyasm.py -i <inputfile> -o <outputfile>')
+        print('capyasm.py -i <inputfile> -o <outputfile>')
         sys.exit(2)
     for opt, arg in opts:
         if opt == '-h':
@@ -64,9 +67,11 @@ def main(argv):
             in_file = arg
         elif opt in ("-o", "--ofile"):
             out_file = arg
-    run(in_file,out_file)
+        elif opt in ("-v", "--verbose"):
+            verbose = True
+    run(in_file,out_file,verbose)
 
-def run(in_file,out_file):
+def run(in_file,out_file,verbose):
     # get file folder
     folder = "/".join(in_file.split('/')[:-1])
     if len(folder) > 0:
@@ -103,8 +108,15 @@ def run(in_file,out_file):
                         for c in label:
                             if c == '_':
                                 indent+=1
+                            else:
+                                break
                         if indent <= len(cur_label):
-                            cur_label = cur_label[:indent] + [label.strip('_')]
+                            prefix = []
+                            if indent >= 1:
+                                prefix = cur_label[:indent]
+                            cur_label = prefix + [label.strip('_')]
+                        else:
+                            cur_label.append(label.strip('_'))
                         labels["_".join(cur_label)]=pc
                     elif tokens[0] in syntax.opcodes:
                         opcode = tokens[0]
@@ -179,7 +191,9 @@ def run(in_file,out_file):
                             else:
                                 print(f'\033[91m'+f"@{i} ERROR: Opcode '{opcode}' does not have addressing mode '{addr}'")
                             
-                            out.append((to_append,cur_label))
+                            if (verbose):
+                                print("\033[0;37m",tokens,cur_label)
+                            out.append((to_append,cur_label.copy()))
                         pc += len(to_append)
                     elif tokens[0] in macros:
                         lines = lines[:i+1] + macros[tokens[0]].format(*(tokens[1:])).split("\n") + lines[i+1:]
@@ -234,7 +248,10 @@ def run(in_file,out_file):
                 if value < 0:
                     value += 256
                 s[0][u] = value
-            
+    if (verbose):
+        print("\033[0;37m")
+        print("Labels:",labels)
+        print("Variables:",variables)
     with open(out_file,"wb") as f:
         for l in out:
             for b in l[0]:
