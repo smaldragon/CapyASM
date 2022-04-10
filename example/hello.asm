@@ -1,5 +1,5 @@
 ; 32-byte iNES header
-    byte "NES",$1a
+    byte 'NES',$1a
     byte 2             ; 32kb prg rom
     byte 2             ; 16Kb chr rom
     byte %00000001
@@ -7,7 +7,7 @@
     byte 0
     byte 0,0,0,0,0,0,0
 
-    asm "nes_registers.asm"
+    cpu 2a03
 
 macro wrb
     lda {0}
@@ -24,14 +24,14 @@ _reset
     ldx $ff
     txs
     inx
-    stx [PPUCTRL]
-    stx [PPUMASK]
+    stx [PPU_CTRL]
+    stx [PPU_MASK]
     stx [$4010]
 
-    bit [PPUSTATUS]
+    bit [PPU_STATUS]
 
 __vblankwait1
-    bit [PPUSTATUS]
+    bit [PPU_STATUS]
     bpl (vblankwait1)
 
 __clrmem
@@ -47,41 +47,41 @@ __clrmem
     bne (clrmem)
 
 __vblankwait2
-    bit [PPUSTATUS]
+    bit [PPU_STATUS]
     bpl (vblankwait2)
 
     ; Define Palette Colors
-    wrb $3F,[PPUADDR]   
-    wrb $00,[PPUADDR]
-    wrb $15,[PPUDATA]
-    wrb $20,[PPUDATA]
+    wrb $3F,[PPU_ADDR]   
+    wrb $00,[PPU_ADDR]
+    wrb $15,[PPU_DATA]
+    wrb $20,[PPU_DATA]
     
     ; Define Cursor Position
-    wrb $21,[PPUADDR]
-    wrb $AA,[PPUADDR]
+    wrb $21,[PPU_ADDR]
+    wrb $AA,[PPU_ADDR]
     
     ; Write text
-    wrb 1,[PPUDATA] ; H
-    wrb 2,[PPUDATA] ; E
-    wrb 3,[PPUDATA] ; L
-    sta   [PPUDATA] ; L
-    wrb 4,[PPUDATA] ; O
-    wrb 0,[PPUDATA] ; ' '
-    wrb 5,[PPUDATA] ; W
-    wrb 4,[PPUDATA] ; O
-    wrb 6,[PPUDATA] ; R
-    wrb 3,[PPUDATA] ; L
-    wrb 7,[PPUDATA] ; D
-    wrb 8,[PPUDATA] ; heart
+    wrb 1,[PPU_DATA] ; H
+    wrb 2,[PPU_DATA] ; E
+    wrb 3,[PPU_DATA] ; L
+    sta   [PPU_DATA] ; L
+    wrb 4,[PPU_DATA] ; O
+    wrb 0,[PPU_DATA] ; ' '
+    wrb 5,[PPU_DATA] ; W
+    wrb 4,[PPU_DATA] ; O
+    wrb 6,[PPU_DATA] ; R
+    wrb 3,[PPU_DATA] ; L
+    wrb 7,[PPU_DATA] ; D
+    wrb 8,[PPU_DATA] ; heart
 
     ; Set scroll
     lda $00
-    sta [PPUSCROLL]
-    sta [PPUSCROLL]
+    sta [PPU_SCROLL]
+    sta [PPU_SCROLL]
 
     ; Activate Background
     lda %000_11_11_0
-    sta [PPUMASK]
+    sta [PPU_MASK]
 
 __forever
     jmp [forever]

@@ -18,37 +18,11 @@ import getopt
 import syntax
 import re
 
-def value_parse(symbol):
-    if len(symbol)==0:
-        return [0]
-    # decimal
-    if symbol[0] == "#":    
-        return [int(symbol[1:])]
-    # hexadeximal
-    if symbol[0] == "$":    
-        return [int(symbol[1:],16)]
-    # binary
-    if symbol[0] == "%":  
-        return [int(symbol[1:],2)]
-    # ascii
-    if len(symbol)>=2:
-        if symbol[0] == '"' and symbol[-1] == '"':
-            out = []
-            for char in symbol[1:-1]:
-                out.append(ord(char))
-            return out
-    
-    try:
-        return [int(symbol)]
-    except:
-        return [symbol]
 symbol_split = re.compile(".*,?")
 value_get = re.compile(f'".+"|{syntax.value}')
 modes=[]
 for regex in syntax.addr:
     modes.append((re.compile(regex),syntax.addr[regex]))
-
-
 
 def main(argv):
     in_file = ''
@@ -72,6 +46,35 @@ def main(argv):
     run(in_file,out_file,verbose)
 
 def run(in_file,out_file,verbose):
+
+    def value_parse(symbol):
+        out = []
+        
+        if symbol[0] in ("'",'"') and symbol[-1] in ("'",'"'):
+            for char in symbol[1:-1]:
+                out.append(ord(char))
+            if symbol[0] == '"':
+                out.append(0)
+            return out
+        else:
+            for operator in re.split(" ",symbol):
+                sign = 1
+                if operator[0] == "-":
+                    operator = operator[1:]
+                    sign = -1
+                if operator.isdigit():
+                    out.append(int(operator)*sign)
+                elif operator[0] == "$":
+                    out.append(int(operator[1:],16)*sign)
+                elif operator[0] == "%":
+                    out.append(int(operator[1:],2)*sign)
+                elif operator in variables:
+                    out.append(variables[operator]*sign)
+                else:
+                    out.append(operator)
+            return out
+
+        return [symbol]
     # get file folder
     folder = "/".join(in_file.split('/')[:-1])
     if len(folder) > 0:
@@ -89,6 +92,7 @@ def run(in_file,out_file,verbose):
     with open(in_file) as f:
         lines = f.readlines()
         i = 0
+        opcodes = syntax.opcodes
         # 1st Pass -> Read and Parse tokens
         while i < len(lines):
             line=lines[i]
@@ -188,6 +192,15 @@ def run(in_file,out_file,verbose):
                                         out.extend(bindata)
                                 if opcode == "macro":
                                     in_macro = values[0]
+                                if opcode == "cpu":
+                                    print(f"\033[0;37m@{i} Setting CPU to {values[0]}")
+                                    cpu_macro,cpu_opcodes = syntax.get(values[0])
+                                    for k,v in cpu_opcodes.items():
+                                        if not k in opcodes:
+                                            opcodes[k] = v
+                                        else:
+                                            opcodes[k].update(v)
+                                    lines = lines[:i+1] + cpu_macro.split("\n") + lines[i+1:]
                             else:
                                 print(f'\033[91m'+f"@{i} ERROR: Opcode '{opcode}' does not have addressing mode '{addr}'")
                             
@@ -228,6 +241,8 @@ def run(in_file,out_file,verbose):
                     if value == -1:
                         if name in labels:
                             value = labels[name]
+                        else:
+                            print("\033[91m"+f"ERROR: Could Not find label {name}")
                 return value
 
             name = None

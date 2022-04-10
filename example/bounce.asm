@@ -1,5 +1,5 @@
 ; 32-byte iNES header
-    byte "NES",$1a
+    byte 'NES',$1a
     byte 2             ; 32kb prg rom
     byte 2             ; 16Kb chr rom
     byte %00000001
@@ -7,7 +7,7 @@
     byte 0
     byte 0,0,0,0,0,0,0
 
-    asm "nes_registers.asm"
+    cpu 2a03
 
 macro wrb
     lda {0}
@@ -35,14 +35,14 @@ _reset
     ldx $ff
     txs
     inx
-    stx [PPUCTRL]
-    stx [PPUMASK]
+    stx [PPU_CTRL]
+    stx [PPU_MASK]
     stx [$4010]
 
-    bit [PPUSTATUS]
+    bit [PPU_STATUS]
 
 __vblankwait1
-    bit [PPUSTATUS]
+    bit [PPU_STATUS]
     bpl (vblankwait1)
 
 __clrmem
@@ -61,26 +61,26 @@ __clrmem
     wrb 1,<ball_dy>
 
 __vblankwait2
-    bit [PPUSTATUS]
+    bit [PPU_STATUS]
     bpl (vblankwait2)
 
     ; Define Palette Colors
-    wrb $3F,[PPUADDR]   
-    wrb $00,[PPUADDR]
-    wrb $15,[PPUDATA]
-    wrb $20,[PPUDATA]
+    wrb $3F,[PPU_ADDR]   
+    wrb $00,[PPU_ADDR]
+    wrb $15,[PPU_DATA]
+    wrb $20,[PPU_DATA]
 
     ; Define Palette Colors
-    wrb $3F,[PPUADDR]   
-    wrb $11,[PPUADDR]
-    wrb $20,[PPUDATA]
-    wrb $10,[PPUDATA]
-    sta [PPUDATA]
+    wrb $3F,[PPU_ADDR]   
+    wrb $11,[PPU_ADDR]
+    wrb $20,[PPU_DATA]
+    wrb $10,[PPU_DATA]
+    sta [PPU_DATA]
 
     ; Set scroll
     lda $00
-    sta [PPUSCROLL]
-    sta [PPUSCROLL]
+    sta [PPU_SCROLL]
+    sta [PPU_SCROLL]
 
     ; Activate Sprites
     ldx $00
@@ -94,16 +94,16 @@ __sprite_loop
     
     ; Activate Background
     lda %000_11_11_0
-    sta [PPUMASK]
+    sta [PPU_MASK]
 
-    wrb %1_0_0_0_0_0_00,[PPUCTRL]
+    wrb %1_0_0_0_0_0_00,[PPU_CTRL]
 
 __forever
     jmp [forever]
 
 _nmi
-    wrb $0,[OAMADDR]
-    wrb $2,[OAMDMA]     ; Begin Sprite DMA
+    wrb $0,[OAM_ADDR]
+    wrb $2,[OAM_DMA]     ; Begin Sprite DMA
 
 __dx
     lda <ball_dx>
@@ -160,7 +160,7 @@ __ball_loop
     rti
 
 ; Vectors
-    pad [$FFFA]
+    pad [VECTORS]
     word nmi
     word reset
     word reset
