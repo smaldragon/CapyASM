@@ -2,7 +2,14 @@
 
 ![link](https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/Cattle_tyrant_%28Machetornis_rixosa%29_on_Capybara.jpg/640px-Cattle_tyrant_%28Machetornis_rixosa%29_on_Capybara.jpg)
 
-**CapyASM** is a 65c02 assembler written in Python built as a learning exercise. Its syntax, particularly in regards to addressing modes, differs from the typical 65xx syntax, with the goal of trying to make the instructions more explicit and easy to understand.
+**CapyASM** is a 6502-family assembler written in Python built as a learning exercise. Its syntax, particularly in regards to addressing modes, differs from the typical 65xx syntax, with the goal of trying to make the instructions more explicit and easy to understand.
+
+The following cpus are currently supported:
+
+* **MOS 6502**
+* **RC 2A03** (nes)
+* **WDC 65c02**
+* **HuC6280** (pc-engine)
 
 > Note: This assembler is very much a WIP, I do not recommend using it in serious projects.
 
@@ -16,7 +23,7 @@ The `examples` folder contains source code for several NES roms, these are being
 
 ## Addressing Modes
 
-In CapyASM the type of addressing to be used is always written explicitly, avoiding ambiguity. Immediate values are written without decoration, memory/absolute values are written between `[]` brackets, zero page is written between `<>` brackets and relative addressing is written between `()` brackets. 
+In CapyASM the type of addressing to be used is always written explicitly, avoiding ambiguity. Immediate values are written without decoration, memory/absolute values are written between `[]` brackets, zero page is written between `<>` brackets and relative addressing is written between `()` brackets. Commands that take multiple arguments are separated by `:` symbols, long versions of data (16-bit immediate and 24-bit absolute) are prefixed with a `#` symbol.
 
 * **Implied** - `RTS`
 * **Registers** - `PSH A | PSH X | PSH Y | PSH P`
@@ -30,6 +37,7 @@ In CapyASM the type of addressing to be used is always written explicitly, avoid
 * **Indexed Indirect** - `LDA [<$10+x>]`
 * **Indirect Indexed** - `LDA [<$10>+y]`
 * **Zero Page Relative** - `BBR4 <$20>:(label)`
+* **Block Move** (HuC6280)- `TIA [$2000]:[$3000]:#$1000
 
 ## Data types
 
@@ -48,6 +56,7 @@ In CapyASM the type of addressing to be used is always written explicitly, avoid
 * `pad $xx|pad $[xx]`  - Adds zeros to the file, either a set amount or until a certain PC is reached
 * `var $xx`            - Define variable
 * `macro name $xx,$xx` - Define Macro
+* `cpu 6502`           - Set the CPU to use
 
 ## Aliases
 
