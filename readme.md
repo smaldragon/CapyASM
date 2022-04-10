@@ -45,7 +45,7 @@ In CapyASM the type of addressing to be used is always written explicitly, avoid
 * `$29` - Hexadecimal
 * `%11110000` - Binary
 * `'Hello World'` - ASCII
-* * `"Hello World"` - ASCII (zero-terminated)
+* `"Hello World"` - ASCII (zero-terminated)
 
 ## Assembler Commands
 
