@@ -36,15 +36,16 @@ In CapyASM the type of addressing to be used is always written explicitly, avoid
 * **Zero Page Indexed** - `LDA <$10+x>`
 * **Indexed Indirect** - `LDA [<$10+x>]`
 * **Indirect Indexed** - `LDA [<$10>+y]`
-* **Zero Page Relative** - `BBR4 <$20>:(label)`
-* **Block Move** (HuC6280)- `TIA [$2000]:[$3000]:#$1000
+* **Zero Page Relative** (65c02) - `BBR4 <$20>:(label)`
+* **Block Move** (HuC6280)- `TIA [$2000]:[$3000]:#$1000`
 
 ## Data types
 
 * `29` - Decimal
 * `$29` - Hexadecimal
 * `%11110000` - Binary
-* `"Hello World"` - ASCII
+* `'Hello World'` - ASCII
+* * `"Hello World"` - ASCII (zero-terminated)
 
 ## Assembler Commands
 
