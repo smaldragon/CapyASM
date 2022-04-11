@@ -165,13 +165,17 @@ def run(in_file,out_file,verbose):
                                             for value in values:
                                                 v = value_parse(value)
                                                 if type(v[0]) is int:
-                                                    to_append.append(value_parse(value)[0]&255)
-                                                    to_append.append(value_parse(value)[0]>>8)
+                                                    to_append.append(v[0]&255)
+                                                    to_append.append(v[0]>>8)
                                                 else:
                                                     to_append.append(v[0])
                                                     to_append.append("&high")
                                         elif symbol == "r":
-                                            to_append.append([values[value_index],pc+2+value_index])
+                                            value = value_parse(values[value_index])[0]
+                                            if type(value) is int:
+                                                to_append.append(value) 
+                                            else:
+                                                to_append.append([values[value_index],pc+2+value_index])
                                 if opcode == "org":
                                     pc = value_parse(values[0])[0]
                                 if opcode == "pad":
@@ -206,7 +210,7 @@ def run(in_file,out_file,verbose):
                             
                             if (verbose):
                                 print("\033[0;37m",tokens,cur_label)
-                            out.append((to_append,cur_label.copy()))
+                            out.append((to_append,cur_label.copy(),pc))
                         pc += len(to_append)
                     elif tokens[0] in macros:
                         lines = lines[:i+1] + macros[tokens[0]].format(*(tokens[1:])).split("\n") + lines[i+1:]
@@ -226,9 +230,11 @@ def run(in_file,out_file,verbose):
     for i,s in enumerate(out):
         for u,b in enumerate(s[0]):
             # Converts a string into its corresponding var/label value
-            def get_value(name,s):
+            def get_value(name,s,i):
                 value = -1
-                if name in variables:
+                if name.startswith("@"):
+                    value = out[i+int(name[1:])-1][2]-s[2]
+                elif name in variables:
                     value = variables[name]        
                 else:
                     space = s[1]
@@ -252,14 +258,16 @@ def run(in_file,out_file,verbose):
             # Absolute Value
             elif type(b) is str:
                 name = b
-                value = get_value(name,s)
+                value = get_value(name,s,i)
                 s[0][u] = value & 255  
                 if u+1 < len(s[0]) and s[0][u+1] == "&high":
                     s[0][u+1] = value>>8  
             # Relative Value
             elif type(b) is list:
                 name = b[0]
-                value = get_value(name,s) - b[1]
+                value = get_value(name,s,i)
+                if name[0] != "@":
+                    value-=b[1]
                 if value < 0:
                     value += 256
                 s[0][u] = value

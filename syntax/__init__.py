@@ -10,7 +10,7 @@ def get(cpu):
     elif cpu.lower() in ("mos6502","6502"):
         return mos6502.macro,mos6502.opcodes
     elif cpu.lower() in ("wdc65c02","65c02"):
-        return wdc62c02.macro,wdc65c02.opcodes
+        return wdc65c02.macro,wdc65c02.opcodes
     #elif cpu.lower() in ("wdc65816","65816"):
     #    return wdc65816.macro,wdc65816.opcodes
     elif cpu.lower() in ("huc6280","c6280","6280","pc-engine","pce","turbografx-16"):
