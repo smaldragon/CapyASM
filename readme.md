@@ -46,6 +46,7 @@ In CapyASM the type of addressing to be used is always written explicitly, avoid
 * `%11110000` - Binary
 * `'Hello World'` - ASCII
 * `"Hello World"` - ASCII (zero-terminated)
+* `(@2)` - Relative Instruction Position, `@0` is current instruction, `@1` the next instruction, etc. 
 
 ## Assembler Commands
 
