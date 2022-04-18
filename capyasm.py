@@ -15,9 +15,38 @@
 
 import sys
 import getopt
-import syntax
-import re
+import parse
 
+def main(argv):
+    in_file = None
+    out_file = None
+    verbose = False
+    try:
+        opts, args = getopt.getopt(argv,"vhi:o:",["ifile=","ofile=","verbose"])
+    except getopt.GetoptError:
+        print('capyasm.py -i <inputfile> -o <outputfile>')
+        sys.exit(2)
+    for opt, arg in opts:
+        if opt == '-h':
+            print('test.py -i <inputfile> -o <outputfile>')
+            sys.exit()
+        elif opt in ("-i", "--ifile"):
+            in_file = arg
+        elif opt in ("-o", "--ofile"):
+            out_file = arg
+        elif opt in ("-v", "--verbose"):
+            verbose = True
+            
+    if in_file is not None and out_file is not None:
+        inter = None
+        with open(in_file) as f:
+            inter = parse.Interpreter(f.readlines(),"")
+        with open(out_file,"wb") as f:
+            inter.run(f)
+    else:
+        print("Error: Invalid IO files")
+
+"""
 symbol_split = re.compile(".*,?")
 value_get = re.compile(f'".+"|{syntax.value}')
 modes=[]
@@ -281,6 +310,6 @@ def run(in_file,out_file,verbose):
                 if b < 0:
                     b+=256
                 f.write(bytearray([b]))
-    
+"""
 if __name__ == "__main__":
    main(sys.argv[1:])
