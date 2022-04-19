@@ -44,7 +44,7 @@ _reset
     stx [$4017]
     ldx $ff
     txs
-    inc x            ; make x zero
+    inc X            ; make x zero
     stx [PPU_CTRL]   ; disable
     stx [PPU_MASK]
     stx [$4010]
@@ -56,14 +56,14 @@ __vblankwait1
     bpl (vblankwait1)
 
 __clrmem
-    sta <$0000+x>
-    sta [$0100+x]
-    sta [$0200+x]
-    sta [$0300+x]
-    sta [$0400+x]
-    sta [$0500+x]
-    sta [$0600+x]
-    sta [$0700+x]
+    sta <$0000+X>
+    sta [$0100+X]
+    sta [$0200+X]
+    sta [$0300+X]
+    sta [$0400+X]
+    sta [$0500+X]
+    sta [$0600+X]
+    sta [$0700+X]
     inx
     bne (clrmem)
 
@@ -85,8 +85,7 @@ __vblankwait2
     wrb $11,[PPU_ADDR]
     wrb $20,[PPU_DATA]
     wrb $10,[PPU_DATA]
-    sta [PPU_DATA]
-
+   
     ; Set scroll
     lda $00
     sta [PPU_SCROLL]
@@ -98,7 +97,7 @@ __vblankwait2
     ; Set Follow Sprites to tile 2
 __sprite_loop
     inx
-    wrb $2,[shadow_oam+x]
+    wrb $2,[shadow_oam+X]
     inx
     inx
     inx
@@ -121,15 +120,15 @@ _nmi
 
     inc <ball_hist_pointer>
     ldx <ball_hist_pointer>
-    wrb <ball_x>,[ball_hist_x+x]
-    wrb <ball_y>,[ball_hist_y+x]
+    wrb <ball_x>,[ball_hist_x+X]
+    wrb <ball_y>,[ball_hist_y+X]
 
     ; Ball 1
     ; X
-    lda [ball_hist_x+x]
+    lda [ball_hist_x+X]
     sta [$203]
     ; Y
-    lda [ball_hist_y+x]
+    lda [ball_hist_y+X]
     sta [$200]
 
     ldy $4
@@ -138,11 +137,11 @@ __ball_loop
     sec
     sbc 4
     tax
-    wrb [ball_hist_y+x],[shadow_oam+y]
+    wrb [ball_hist_y+X],[shadow_oam+Y]
     iny
     iny
     iny
-    wrb [ball_hist_x+x],[shadow_oam+y]
+    wrb [ball_hist_x+X],[shadow_oam+Y]
     iny
     bzc (ball_loop)
 __movement
@@ -194,7 +193,7 @@ _controller_read
 __loop
     lda [JOY1]
     dec X
-    sta <controller+x>
+    sta <controller+X>
     bzc (loop)
     rts
 

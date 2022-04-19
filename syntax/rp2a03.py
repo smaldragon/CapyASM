@@ -1,5 +1,7 @@
 from . import mos6502
 
+registers = ["A","X","Y","P","C","D","I","V"]
+
 macro = mos6502.macro+"""
     ; 2a03/NES Registers
     var SQ1_VOL     $4000

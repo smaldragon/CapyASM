@@ -82,7 +82,7 @@ class Interpreter:
                 #print("TOKENS:",tokens)
                 symbols = self.getSymbols(tokens)
                 #print("SYMBOLS",symbols)
-                lineout = self.getCompile(symbols)
+                lineout = (self.getCompile(symbols),self.cur_label.copy())
                 #print("OUT",lineout)
                 pass_1.append(lineout)
             else:
@@ -97,10 +97,12 @@ class Interpreter:
         # Pass 2 - Calculate math, labels and relatives
         print("PASS 2")
         pass_2 = []
+        #print(self.labels)
         for _,p in enumerate(pass_1):
             if p[0]:
                 cur_int = []
-                for d in p[0]:
+                self.cur_label = p[1]
+                for d in p[0][0]:
                     if d[0] == "&code":
                         cur_int.append(d[1])
                     elif d[0] == "&byte":
@@ -110,7 +112,7 @@ class Interpreter:
                     elif d[0] == "&high":
                         cur_int.append((self.processExpression(d[1])>>8)&255)
                     elif d[0] == "&rel":
-                        v = self.processExpression(d[1])-(p[1]+len(cur_int)+1)
+                        v = self.processExpression(d[1])-(p[0][1]+len(cur_int)+1)
                         cur_int.append(v)
                     elif d[0] == "&bytes":
                         cur_int.extend(d[1])
@@ -157,10 +159,23 @@ class Interpreter:
                 operand = token
                 value = None
             else:
-                value = parse_value(token)
+                is_label = False
+                t = self.cur_label.copy()
+                while len(t) > 0:
+                    w = "".join(t)+"_"*len(t)+token
+                    #print(w)
+                    if w in self.labels:
+                        value = [token,self.labels[w]]
+                        is_label = True
+                        break
+                    t.pop()
+                    #value = [token,self.labels[token]]
+                if not is_label:
+                    value = parse_value(token)
                 
             # BinOp
             if operand in BIN_OPS and value is not None and i >= 2:
+                #print(operand,value)
                 symbols[-1][1] = BIN_OPS[operand](symbols[-1][1],value[1])
             elif operand in POST_OPS and value is None:
                 symbols[-1][1] = POST_OPS[operand](symbols[-1][1])
@@ -168,6 +183,7 @@ class Interpreter:
                 symbols.append([value[0],PRE_OPS[operand](value[1])])
             elif value is not None:
                 symbols.append(value)
+        #print(symbols)
         return symbols[0][1]
         
     # Step 1 - Parse a line of code and return tokens
@@ -265,7 +281,11 @@ class Interpreter:
             # ASSEMBLER INSTRUCTION
             elif opcode in ASM_OPS:
                 if opcode == "cpu":
-                    cpu_macro,cpu_opcodes=syntax.get(symbols[1][0])
+                    global REGISTERS
+                    global CPU_OPS
+                    cpu_macro,cpu_opcodes,registers=syntax.get(symbols[1][0])
+                    
+                    REGISTERS += registers
                     CPU_OPS.update(cpu_opcodes)
                     self.lines = self.lines[:self.cur_line+1] + cpu_macro.split("\n") + self.lines[self.cur_line+1:]
                 if opcode == "var":
@@ -275,7 +295,7 @@ class Interpreter:
                     except:
                         self.error("Unable to process variable")
                 if opcode == "org":
-                    self.pc = self.processExpression(symbols[1])
+                    self.pc = self.processExpression(symbols[2])
                 if opcode == "pad":
                     if symbols[1][0] == '[':
                         output = [("&bytes",[0]*(self.processExpression(symbols[2])-self.pc))]
