@@ -10,6 +10,7 @@ macro = """
     var VECTOR_IRQ  $FFFE
     var VECTOR_BRK  $FFFE
 """
+registers = ["A","X","Y","P","C","D","I","V"]
 
 opcodes = {
     # opcodes

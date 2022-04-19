@@ -1,5 +1,7 @@
 # Western Design Center 65c02
 
+registers = ["A","X","Y","P","C","D","I","V"]
+
 macro = """
     var ZERO_PAGE $00
     var STACK     $100

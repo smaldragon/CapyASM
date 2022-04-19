@@ -4,3 +4,4 @@ from . import wdc65c02
 
 macro   = wdc65c02.macro
 opcodes = wdc65c02.opcodes
+registers = wdc65c02.registers
