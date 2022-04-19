@@ -46,7 +46,6 @@ In CapyASM the type of addressing to be used is always written explicitly, avoid
 * `%11110000` - Binary
 * `'Hello World'` - ASCII
 * `"Hello World"` - ASCII (zero-terminated)
-* `(@2)` - Relative Instruction Position, `@0` is current instruction, `@1` the next instruction, etc. 
 
 ## Assembler Commands
 
@@ -104,3 +103,14 @@ endmacro
 
     wrb $20,[$2000]
 ```
+## Compile-time Math
+
+CapyASM supports some simple compile-time math operations, these are:
+
+* `a+b`
+* `a-b`
+* `a*b`
+* `a/b`
+* `-a`
+* `a.lo`
+* `a.hi`
