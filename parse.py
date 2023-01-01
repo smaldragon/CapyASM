@@ -3,15 +3,15 @@ import operator
 import syntax
 
 ASM_OPS = [
-    "cpu",
-    "var",
-    "org",
-    "pad",
-    "byte",
-    "word",
-    "asm",
-    "bin",
-    "macro",
+    ".cpu",
+    ".var",
+    ".org",
+    ".pad",
+    ".byte",
+    ".word",
+    ".asm",
+    ".bin",
+    ".macro",
 ]
 
 CPU_OPS = {}
@@ -280,7 +280,7 @@ class Interpreter:
                 self.labels["".join(self.cur_label)] = self.pc
             # ASSEMBLER INSTRUCTION
             elif opcode in ASM_OPS:
-                if opcode == "cpu":
+                if opcode == ".cpu":
                     global REGISTERS
                     global CPU_OPS
                     cpu_macro,cpu_opcodes,registers=syntax.get(symbols[1][0])
@@ -288,22 +288,22 @@ class Interpreter:
                     REGISTERS += registers
                     CPU_OPS.update(cpu_opcodes)
                     self.lines = self.lines[:self.cur_line+1] + cpu_macro.split("\n") + self.lines[self.cur_line+1:]
-                if opcode == "var":
+                if opcode == ".var":
                     try:
                         value = self.processExpression(symbols[2])
                         self.variables[symbols[1][0]] = value
                     except:
                         self.error("Unable to process variable")
-                if opcode == "org":
+                if opcode == ".org":
                     self.pc = self.processExpression(symbols[2])
-                if opcode == "pad":
+                if opcode == ".pad":
                     if symbols[1][0] == '[':
                         output = [("&bytes",[0]*(self.processExpression(symbols[2])-self.pc))]
                     else:
                         output = [("&bytes",[0]*self.processExpression(symbols[1]))]
                     #else:
                     #    self.error("Invalid values for pad")
-                if opcode == "byte":
+                if opcode == ".byte":
                     for s in symbols[1:]:
                         if s[0][0] in ("'",'"'):
                             string = []
@@ -314,21 +314,21 @@ class Interpreter:
                             output.append(("&bytes",string))
                         else:
                             output.append(("&byte",s))
-                if opcode == "word":
+                if opcode == ".word":
                     for s in symbols[1:]:
                         output.extend([("&low",s),("&high",s)])
-                if opcode == "asm":
+                if opcode == ".asm":
                     with open(self.folder+symbols[1][0][1:]) as f:
                         self.lines = self.lines[:self.cur_line+1] + f.read().split("\n") + self.lines[self.cur_line+1:]
                         self.log(f" Inserted assembly file \"{symbols[1][0][1:]}\"")
-                if opcode == "bin":
+                if opcode == ".bin":
                     with open(self.folder+symbols[1][0][1:],"rb") as f:
                         bn = []
                         for b in f.read():
                             bn.append(b)
                         output.append(("&bytes",bn))
                         self.log(f" Inserted binary file \"{symbols[1][0][1:]}\"")
-                if opcode == "macro":
+                if opcode == ".macro":
                     self.in_macro = symbols[1][0]
             # CPU INSTRUCTION
             elif opcode in CPU_OPS:

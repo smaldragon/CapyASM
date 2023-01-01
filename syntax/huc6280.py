@@ -1,25 +1,26 @@
-# Hudson C6820 (pc-engine)
-
+"""
+Hudson C6820 (pc-engine)
+"""
 from . import wdc65c02
 
 macro = """
-    var ZERO_PAGE $2000
-    var STACK     $2100
+    .var ZERO_PAGE $2000
+    .var STACK     $2100
 
-    var VECTORS     $FFFA
-    var VECTOR_NMI  $FFFA
-    var VECTOR_RST  $FFFC
-    var VECTOR_IRQ  $FFFE
-    var VECTOR_BRK  $FFFE
+    .var VECTORS     $FFFA
+    .var VECTOR_NMI  $FFFA
+    .var VECTOR_RST  $FFFC
+    .var VECTOR_IRQ  $FFFE
+    .var VECTOR_BRK  $FFFE
 
-    var MPR0        %0000_0001
-    var MPR1        %0000_0010
-    var MPR2        %0000_0100
-    var MPR3        %0000_1000
-    var MPR4        %0001_0000
-    var MPR5        %0010_0000
-    var MPR6        %0100_0000
-    var MPR7        %1000_0000
+    .var MPR0        %0000_0001
+    .var MPR1        %0000_0010
+    .var MPR2        %0000_0100
+    .var MPR3        %0000_1000
+    .var MPR4        %0001_0000
+    .var MPR5        %0010_0000
+    .var MPR6        %0100_0000
+    .var MPR7        %1000_0000
 """
 
 opcodes = wdc65c02.opcodes.copy()

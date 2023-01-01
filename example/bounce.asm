@@ -1,32 +1,32 @@
 ; 32-byte iNES header
-    byte 'NES',$1a
-    byte 2             ; 32kb prg rom
-    byte 2             ; 16Kb chr rom
-    byte %00000001
-    byte %00000000
-    byte 0
-    byte 0,0,0,0,0,0,0
+    .byte 'NES',$1a
+    .byte 2             ; 32kb prg rom
+    .byte 2             ; 16Kb chr rom
+    .byte %00000001
+    .byte %00000000
+    .byte 0
+    .byte 0,0,0,0,0,0,0
 
-    cpu 2a03
+    .cpu 2a03
 
-macro wrb
+.macro wrb
     lda {0}
     sta {1}
-endmacro
+.endmacro
 
     ; Zero Page
-    var ball_x            $0
-    var ball_y            $1
-    var ball_dx           $2
-    var ball_dy           $3
-    var ball_hist_pointer $4
+    .var ball_x            $0
+    .var ball_y            $1
+    .var ball_dx           $2
+    .var ball_dy           $3
+    .var ball_hist_pointer $4
     ; WRAM
-    var shadow_oam        $200
-    var ball_hist_x       $300
-    var ball_hist_y       $400
+    .var shadow_oam        $200
+    .var ball_hist_x       $300
+    .var ball_hist_y       $400
 
 ; Prg ROM
-    org [$8000]
+    .org [$8000]
 _reset
     sei
     cld
@@ -160,18 +160,18 @@ __ball_loop
     rti
 
 ; Vectors
-    pad [VECTORS]
-    word nmi
-    word reset
-    word reset
+    .pad [VECTORS]
+    .word nmi
+    .word reset
+    .word reset
 
 ; Chr ROM
-    org [0]
-    pad 16
+    .org [0]
+    .pad 16
     ; Ball Main
-    byte %00111100,%01111110,%11111111,%11111111,%11111111,%11111111,%01111110,%00111100
-    pad 8
+    .byte %00111100,%01111110,%11111111,%11111111,%11111111,%11111111,%01111110,%00111100
+    .pad 8
     ; Ball Shadow
-    pad 8
-    byte %00111100,%01111110,%11111111,%11111111,%11111111,%11111111,%01111110,%00111100
-    pad [$4000]
+    .pad 8
+    .byte %00111100,%01111110,%11111111,%11111111,%11111111,%11111111,%01111110,%00111100
+    .pad [$4000]

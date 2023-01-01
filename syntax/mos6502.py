@@ -1,14 +1,16 @@
-# MOS 6502
+"""
+MOS 6510
+"""
 
 macro = """
-    var ZERO_PAGE   $00
-    var STACK       $100
+    .var ZERO_PAGE   $00
+    .var STACK       $100
 
-    var VECTORS     $FFFA
-    var VECTOR_NMI  $FFFA
-    var VECTOR_RST  $FFFC
-    var VECTOR_IRQ  $FFFE
-    var VECTOR_BRK  $FFFE
+    .var VECTORS     $FFFA
+    .var VECTOR_NMI  $FFFA
+    .var VECTOR_RST  $FFFC
+    .var VECTOR_IRQ  $FFFE
+    .var VECTOR_BRK  $FFFE
 """
 registers = ["A","X","Y","P","C","D","I","V"]
 

@@ -1,16 +1,18 @@
-# Western Design Center 65c02
+"""
+Western Design Center 65c02
+"""
 
 registers = ["A","X","Y","P","C","D","I","V"]
 
 macro = """
-    var ZERO_PAGE $00
-    var STACK     $100
+    .var ZERO_PAGE $00
+    .var STACK     $100
 
-    var VECTORS     $FFFA
-    var VECTOR_NMI  $FFFA
-    var VECTOR_RST  $FFFC
-    var VECTOR_IRQ  $FFFE
-    var VECTOR_BRK  $FFFE
+    .var VECTORS     $FFFA
+    .var VECTOR_NMI  $FFFA
+    .var VECTOR_RST  $FFFC
+    .var VECTOR_IRQ  $FFFE
+    .var VECTOR_BRK  $FFFE
 """
 
 opcodes = {

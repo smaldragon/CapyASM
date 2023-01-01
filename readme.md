@@ -49,15 +49,15 @@ In CapyASM the type of addressing to be used is always written explicitly, avoid
 
 ## Assembler Commands
 
-* `byte $xx,$xx,(...)` - Inserts 8-bit data
-* `word $xxxx,$xxxx,(...)`   - Inserts 16-bit data (little-endian) 
-* `bin "file.bin"`     - Inserts a binary file
-* `asm "file.asm"`     - Inserts an assembly file
-* `org [$xx]`          - Sets the Program Counter
-* `pad $xx|pad $[xx]`  - Adds zeros to the file, either a set amount or until a certain PC is reached
-* `var $xx`            - Define variable
-* `macro name $xx,$xx` - Define Macro
-* `cpu 6502`           - Set the CPU to use
+* `.byte $xx,$xx,(...)` - Inserts 8-bit data
+* `.word $xxxx,$xxxx,(...)`   - Inserts 16-bit data (little-endian) 
+* `.bin "file.bin"`     - Inserts a binary file
+* `.asm "file.asm"`     - Inserts an assembly file
+* `.org [$xx]`          - Sets the Program Counter
+* `.pad $xx|pad $[xx]`  - Adds zeros to the file, either a set amount or until a certain PC is reached
+* `.var $xx`            - Define variable
+* `.macro name $xx,$xx` - Define Macro
+* `.cpu 6502`           - Set the CPU to use
 
 ## Aliases
 
@@ -81,12 +81,12 @@ Labels are defined using a `_` prefix. Labels have namespaces that are determine
 _reset
   (...) ;do things
 __loop
-  jmp loop
+  jmp [loop]
   
 _nmi
   (...) ;do things
 __loop
-  bne loop
+  bne [loop]
   
 ; Both `_reset` and `_nmi` have a `__loop` label inside them
 ```
