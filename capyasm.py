@@ -16,49 +16,51 @@
 import argparse
 import logging
 import parse
+import docs
 
 def main(args):
-    in_file = args.input
-    out_file = args.output
-    debug = args.debug
-    
-    valid_args = True
-    
     level = logging.INFO
-    if debug:
+    if args.debug:
         level = logging.DEBUG
     logging.basicConfig(level=level, format="%(levelname)s: %(message)s")
     
-    if not in_file:
+    if args.docs:
+        docs.read()
+        return
+
+    valid_args = True
+        
+    if not args.input:
         logging.error("No input file specified") 
         valid_args = False
     else:
         inter = None
         try:
-            with open(in_file) as f:
+            with open(args.input) as f:
                 inter = parse.Interpreter(f.readlines(),"")
         except:
-            logging.error(f"Failed to open input file '{in_file}'")
+            logging.error(f"Failed to open input file '{args.input}'")
             valid_args = False
 
         if valid_args and inter:
             try:            
-                with open(out_file,"wb") as f:
+                with open(args.output,"wb") as f:
                     inter.run(f)
             except:
-                logging.error(f"Failed to open output file '{out_file}'")
+                logging.error(f"Failed to open output file '{args.output}'")
         
     if not valid_args:
-        logging.info('Usage: capyasm.py -i <inputfile> -o <outputfile>')
+        logging.info('Usage: capyasm.py -i <inputfile> -o <args.output>')
 
 if __name__ == "__main__":    
     parser = argparse.ArgumentParser()
     logging.addLevelName(logging.ERROR,"\x1b[31;1m"+"Error"+"\x1b[0m")
     logging.addLevelName(logging.INFO,"Info")
     
-
     parser.add_argument("-i","--input", help="The file to assemble", action = "store")
     parser.add_argument("-o","--output", help="The output file", action = "store")
     parser.add_argument("-d","--debug", help = "Debug output", action = "store_true")
+    parser.add_argument("--docs", help = "Print Documentation", action = "store_true")
+    
     main(parser.parse_args())
    
