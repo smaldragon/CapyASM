@@ -1,3 +1,5 @@
+import logging
+
 from . import mos6502
 from . import wdc65c02
 from . import wdc65816
@@ -16,7 +18,7 @@ def get(cpu):
     elif cpu.lower() in ("huc6280","c6280","6280","pc-engine","pce","turbografx-16"):
         return huc6280.macro,huc6280.opcodes,huc6280.registers
     else:
-        print(f'\033[91m'+f"@{i} ERROR: Unrecognized cpu: '{cpu}'")
+        logging.error(f'Unrecognized cpu')
 
 value = "\$*%*\"*[^<>\[\]\(\)\+:#]+"
 

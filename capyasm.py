@@ -13,38 +13,52 @@
 #   .$M       ;              ``  ' ld;.p.
 #__ _`$o,.-__  "ei-Mu~,.__ ___ `_-dee3'o-ii~m. ____
 
-import sys
-import getopt
+import argparse
+import logging
 import parse
 
-def main(argv):
-    in_file = None
-    out_file = None
-    verbose = False
-    try:
-        opts, args = getopt.getopt(argv,"vhi:o:",["ifile=","ofile=","verbose"])
-    except getopt.GetoptError:
-        print('capyasm.py -i <inputfile> -o <outputfile>')
-        sys.exit(2)
-    for opt, arg in opts:
-        if opt == '-h':
-            print('test.py -i <inputfile> -o <outputfile>')
-            sys.exit()
-        elif opt in ("-i", "--ifile"):
-            in_file = arg
-        elif opt in ("-o", "--ofile"):
-            out_file = arg
-        elif opt in ("-v", "--verbose"):
-            verbose = True
-            
-    if in_file is not None and out_file is not None:
-        inter = None
-        with open(in_file) as f:
-            inter = parse.Interpreter(f.readlines(),"")
-        with open(out_file,"wb") as f:
-            inter.run(f)
+def main(args):
+    in_file = args.input
+    out_file = args.output
+    debug = args.debug
+    
+    valid_args = True
+    
+    level = logging.INFO
+    if debug:
+        level = logging.DEBUG
+    logging.basicConfig(level=level, format="%(levelname)s: %(message)s")
+    
+    if not in_file:
+        logging.error("No input file specified") 
+        valid_args = False
     else:
-        print("Error: Invalid IO files")
+        inter = None
+        try:
+            with open(in_file) as f:
+                inter = parse.Interpreter(f.readlines(),"")
+        except:
+            logging.error(f"Failed to open input file '{in_file}'")
+            valid_args = False
 
-if __name__ == "__main__":
-   main(sys.argv[1:])
+        if valid_args and inter:
+            try:            
+                with open(out_file,"wb") as f:
+                    inter.run(f)
+            except:
+                logging.error(f"Failed to open output file '{out_file}'")
+        
+    if not valid_args:
+        logging.info('Usage: capyasm.py -i <inputfile> -o <outputfile>')
+
+if __name__ == "__main__":    
+    parser = argparse.ArgumentParser()
+    logging.addLevelName(logging.ERROR,"\x1b[31;1m"+"Error"+"\x1b[0m")
+    logging.addLevelName(logging.INFO,"Info")
+    
+
+    parser.add_argument("-i","--input", help="The file to assemble", action = "store")
+    parser.add_argument("-o","--output", help="The output file", action = "store")
+    parser.add_argument("-d","--debug", help = "Debug output", action = "store_true")
+    main(parser.parse_args())
+   

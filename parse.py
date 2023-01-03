@@ -1,6 +1,6 @@
-from colorama import Fore, Back, Style
 import operator
 import syntax
+import logging
 
 ASM_OPS = [
     ".cpu",
@@ -66,38 +66,40 @@ class Interpreter:
         self.in_macro  = None
         self.cur_macro = ""
     
-    def log(self,message):
-        print(Fore.YELLOW + "LOG:" + message + Fore.RESET )
-    def error(self,message):
-        print(Back.RED + "ERROR:" + message + Back.RESET)
+    #def log(self,message):
+    #    logging.info(colorama.Fore.YELLOW + "LOG:" + message + colorama.Fore.RESET )
+    #def error(self,message):
+    #    logging.error(colorama.Back.RED + "ERROR:" + message + colorama.Back.RESET)
     def run(self,out_f):
         # Pass 1 - Go line by line and execute it
-        print("PASS 1")
+        logging.info("PASS 1 - General Pass...")
         pass_1 = []
         while self.cur_line < len(self.lines):
             if self.in_macro is None:
-                #print("\n")
-                #print("LINE:",self.lines[self.cur_line].strip())
+                logging.debug("\n")
+                logging.debug("LINE:"+self.lines[self.cur_line].strip())
                 tokens  = self.getTokens(self.lines[self.cur_line])
-                #print("TOKENS:",tokens)
+                logging.debug(f"TOKENS: {tokens}")
                 symbols = self.getSymbols(tokens)
-                #print("SYMBOLS",symbols)
+                logging.debug(f"SYMBOLS {symbols}")
                 lineout = (self.getCompile(symbols),self.cur_label.copy())
-                #print("OUT",lineout)
+                logging.debug(f"OUT {lineout}")
                 pass_1.append(lineout)
             else:
-                if self.lines[self.cur_line].strip() == "endmacro":
+                if self.lines[self.cur_line].strip() == ".endmacro":
                     self.macros[self.in_macro] = self.cur_macro
                     self.in_macro = None
                 else:
                     self.cur_macro+=self.lines[self.cur_line]
                 
             self.cur_line += 1
-        #print(pass_1)
+        logging.debug(pass_1)
+        
+        #logging.debug(f"BINARY: {pass_1}")
         # Pass 2 - Calculate math, labels and relatives
-        print("PASS 2")
+        logging.info("PASS 2 - Inserting Labels and Relatives...")
         pass_2 = []
-        #print(self.labels)
+        logging.debug(self.labels)
         for _,p in enumerate(pass_1):
             if p[0]:
                 cur_int = []
@@ -117,16 +119,21 @@ class Interpreter:
                     elif d[0] == "&bytes":
                         cur_int.extend(d[1])
                 pass_2.extend(cur_int)
-        print("PASS 3")
-        # Pass 3 - Output to binary file
         
-        for b in pass_2:
+        #logging.debug(f"BINARY: {pass_2}")
+        # Pass 3 - Output to binary file                
+        logging.info("PASS 3 - File Output...")
+        
+        for b in pass_2:    
             if b < 0:
                 b+=256
             if b < 0 or b > 255:
-                self.error("INVALID BYTE")
+                logging.error("INVALID BYTE")
             else:
                 out_f.write(bytearray([b]))
+
+
+        logging.info("Finished Running!")
                     
     def processExpression(self,expr):
         def parse_value(value):
@@ -163,7 +170,7 @@ class Interpreter:
                 t = self.cur_label.copy()
                 while len(t) > 0:
                     w = "".join(t)+"_"*len(t)+token
-                    #print(w)
+                    logging.debug(w)
                     if w in self.labels:
                         value = [token,self.labels[w]]
                         is_label = True
@@ -175,7 +182,7 @@ class Interpreter:
                 
             # BinOp
             if operand in BIN_OPS and value is not None and i >= 2:
-                #print(operand,value)
+                logging.debug(str(operand)+str(value))
                 symbols[-1][1] = BIN_OPS[operand](symbols[-1][1],value[1])
             elif operand in POST_OPS and value is None:
                 symbols[-1][1] = POST_OPS[operand](symbols[-1][1])
@@ -183,7 +190,7 @@ class Interpreter:
                 symbols.append([value[0],PRE_OPS[operand](value[1])])
             elif value is not None:
                 symbols.append(value)
-        #print(symbols)
+        logging.debug(symbols)
         return symbols[0][1]
         
     # Step 1 - Parse a line of code and return tokens
@@ -293,7 +300,7 @@ class Interpreter:
                         value = self.processExpression(symbols[2])
                         self.variables[symbols[1][0]] = value
                     except:
-                        self.error("Unable to process variable")
+                        logging.error("Unable to process variable")
                 if opcode == ".org":
                     self.pc = self.processExpression(symbols[2])
                 if opcode == ".pad":
@@ -302,7 +309,7 @@ class Interpreter:
                     else:
                         output = [("&bytes",[0]*self.processExpression(symbols[1]))]
                     #else:
-                    #    self.error("Invalid values for pad")
+                    #    logging.error("Invalid values for pad")
                 if opcode == ".byte":
                     for s in symbols[1:]:
                         if s[0][0] in ("'",'"'):
@@ -320,14 +327,14 @@ class Interpreter:
                 if opcode == ".asm":
                     with open(self.folder+symbols[1][0][1:]) as f:
                         self.lines = self.lines[:self.cur_line+1] + f.read().split("\n") + self.lines[self.cur_line+1:]
-                        self.log(f" Inserted assembly file \"{symbols[1][0][1:]}\"")
+                        logging.info(f" Inserted assembly file \"{symbols[1][0][1:]}\"")
                 if opcode == ".bin":
                     with open(self.folder+symbols[1][0][1:],"rb") as f:
                         bn = []
                         for b in f.read():
                             bn.append(b)
                         output.append(("&bytes",bn))
-                        self.log(f" Inserted binary file \"{symbols[1][0][1:]}\"")
+                        logging.info(f" Inserted binary file \"{symbols[1][0][1:]}\"")
                 if opcode == ".macro":
                     self.in_macro = symbols[1][0]
             # CPU INSTRUCTION
@@ -362,19 +369,19 @@ class Interpreter:
                                 output.append(("&high",param[param_i]))
                                 param_i += 1
                     else:
-                        self.error(f"Opcode {opcode} does not support Addressing Mode {addr}")
+                        logging.error(f"Opcode {opcode} does not support Addressing Mode {addr}")
                 else:
-                    self.error(f"Unkown Addressing Mode {mode}")
+                    logging.error(f"Unkown Addressing Mode {mode}")
                         
-                #print(f"mode: '{mode}'")
+                logging.debug(f"mode: '{mode}'")
             elif opcode in self.macros:
                 values = self.lines[self.cur_line].strip().split(" ")[1].split(",")
                 try:
                     self.lines = self.lines[:self.cur_line+1] + self.macros[opcode].format(*(values)).split("\n") + self.lines[self.cur_line+1:]
                 except:
-                    self.error("Invalid Macro") 
+                    logging.error("Invalid Macro") 
             else:
-                self.error(f"Unkown Opcode {opcode}")
+                logging.error(f"Unkown Opcode '{opcode}'")
         for v in output:
             if v[0] == "&bytes":
                 self.pc += len(v[1])
