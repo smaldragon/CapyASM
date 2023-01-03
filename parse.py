@@ -1,6 +1,7 @@
 import operator
 import syntax
 import logging
+import sys
 
 ASM_OPS = [
     ".cpu",
@@ -16,12 +17,6 @@ ASM_OPS = [
 
 CPU_OPS = {}
 
-BIN_OPS = {
-    "+":operator.add,
-    "-":operator.sub,
-    "/":operator.floordiv,
-    "*":operator.mul,
-}
 def operator_b0(a):
     return a & 255
 
@@ -34,9 +29,8 @@ def operator_b2(a):
 def operator_b3(a):
     return (a >> 24) & 255
 
-
 PRE_OPS = {
-    "-":operator.neg,
+    "~":operator.neg,
 }
 POST_OPS = {
     ".b0":operator_b0,
@@ -46,6 +40,15 @@ POST_OPS = {
     ".lo":operator_b0,
     ".hi":operator_b1,
 }
+
+BIN_OPS = {
+    "+":operator.add,
+    "-":operator.sub,
+    "/":operator.floordiv,
+    "*":operator.mul,
+}
+
+ALL_OPS = {}; ALL_OPS.update(PRE_OPS) ; ALL_OPS.update(POST_OPS) ; ALL_OPS.update(BIN_OPS)
 
 ADDR_TOKENS = ["<",">","(",")","[","]","+X","+Y","#"]
 REGISTERS = ["A","X","Y","P","C","D","I","V"]
@@ -126,9 +129,10 @@ class Interpreter:
         
         for b in pass_2:    
             if b < 0:
-                b+=256
+                b=-b
             if b < 0 or b > 255:
                 logging.error("INVALID BYTE")
+                sys.exit(2)
             else:
                 out_f.write(bytearray([b]))
 
@@ -225,7 +229,7 @@ class Interpreter:
                     cur_token,tokens=append_token(cur_token,tokens)
                     cur_token += c
                     string = c
-                elif c in ("[","]","(",")","<",">","+","-","*","/","#"):
+                elif c in ("[","]","(",")","<",">","+","-","*","/","#") or c in ALL_OPS:
                     cur_token,tokens=append_token(cur_token,tokens)
                     cur_token = c
                     cur_token,tokens=append_token(cur_token,tokens)
@@ -253,7 +257,13 @@ class Interpreter:
                 cur_symbol = []
                 continue
             
-            if token in BIN_OPS or token in PRE_OPS or token in POST_OPS:
+            if token in PRE_OPS:
+                symbols.append(cur_symbol.copy())
+                cur_symbol = []
+                prev_token = True
+            elif token in POST_OPS:
+                pass
+            elif token in BIN_OPS:
                 prev_token = True
             else:
                 if prev_token == False:
@@ -264,9 +274,11 @@ class Interpreter:
         
         if cur_symbol != []:
             symbols.append(cur_symbol)
+
         return symbols
     # Step 3 - Compile a symbol array (1st pass)
     def getCompile(self,symbols):
+        logging.debug(symbols)
         output = []
         cur_pc = self.pc
         if symbols and len(symbols[0]) == 1:
@@ -301,6 +313,7 @@ class Interpreter:
                         self.variables[symbols[1][0]] = value
                     except:
                         logging.error("Unable to process variable")
+                        sys.exit(2)
                 if opcode == ".org":
                     self.pc = self.processExpression(symbols[2])
                 if opcode == ".pad":
@@ -370,8 +383,10 @@ class Interpreter:
                                 param_i += 1
                     else:
                         logging.error(f"Opcode {opcode} does not support Addressing Mode {addr}")
+                        sys.exit(2)
                 else:
                     logging.error(f"Unkown Addressing Mode {mode}")
+                    sys.exit(2)
                         
                 logging.debug(f"mode: '{mode}'")
             elif opcode in self.macros:
@@ -379,9 +394,11 @@ class Interpreter:
                 try:
                     self.lines = self.lines[:self.cur_line+1] + self.macros[opcode].format(*(values)).split("\n") + self.lines[self.cur_line+1:]
                 except:
-                    logging.error("Invalid Macro") 
+                    logging.error("Invalid Macro")
+                    sys.exit(2) 
             else:
                 logging.error(f"Unkown Opcode '{opcode}'")
+                sys.exit(2)
         for v in output:
             if v[0] == "&bytes":
                 self.pc += len(v[1])
