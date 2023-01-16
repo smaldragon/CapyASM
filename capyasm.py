@@ -38,7 +38,8 @@ def main(args):
         try:
             with open(args.input) as f:
                 inter = parse.Interpreter(f.readlines(),"")
-        except:
+        except Exception(e):
+            print(e)
             logging.error(f"Failed to open input file '{args.input}'")
             valid_args = False
 

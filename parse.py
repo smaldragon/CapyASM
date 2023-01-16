@@ -50,7 +50,7 @@ BIN_OPS = {
 
 ALL_OPS = {}; ALL_OPS.update(PRE_OPS) ; ALL_OPS.update(POST_OPS) ; ALL_OPS.update(BIN_OPS)
 
-ADDR_TOKENS = ["<",">","(",")","[","]","+X","+Y","#"]
+ADDR_TOKENS = ["<",">","(",")","[","]","+X","+Y","#",'+']
 REGISTERS = ["A","X","Y","P","C","D","I","V"]
 
 class Interpreter:
@@ -118,6 +118,7 @@ class Interpreter:
                         cur_int.append((self.processExpression(d[1])>>8)&255)
                     elif d[0] == "&rel":
                         v = self.processExpression(d[1])-(p[0][1]+len(cur_int)+1)
+                        logging.debug(f"offset is {v}")
                         cur_int.append(v)
                     elif d[0] == "&bytes":
                         cur_int.extend(d[1])
@@ -129,7 +130,7 @@ class Interpreter:
         
         for b in pass_2:    
             if b < 0:
-                b=-b
+                b=256+b
             if b < 0 or b > 255:
                 logging.error("INVALID BYTE")
                 sys.exit(2)
@@ -165,7 +166,7 @@ class Interpreter:
             if token in self.variables:
                 value = [token,self.variables[token]]
             elif token in self.labels:
-                value = [token,self.labels[token]]
+                value = [token,self.labels[token][0]]
             elif token in BIN_OPS or token in PRE_OPS or token in POST_OPS:
                 operand = token
                 value = None
@@ -176,7 +177,7 @@ class Interpreter:
                     w = "".join(t)+"_"*len(t)+token
                     logging.debug(w)
                     if w in self.labels:
-                        value = [token,self.labels[w]]
+                        value = [token,self.labels[w][0]]
                         is_label = True
                         break
                     t.pop()
@@ -296,7 +297,12 @@ class Interpreter:
                     self.cur_label.append(opcode[1:])
                 else:
                     self.cur_label = self.cur_label[:ident] + [opcode[1:]]
-                self.labels["".join(self.cur_label)] = self.pc
+                key = "".join(self.cur_label)
+                if key in self.labels:
+                    self.labels[key] += [self.pc]
+                else:
+                    self.labels[key] = [self.pc]
+                    
             # ASSEMBLER INSTRUCTION
             elif opcode in ASM_OPS:
                 if opcode == ".cpu":
@@ -318,9 +324,13 @@ class Interpreter:
                     self.pc = self.processExpression(symbols[2])
                 if opcode == ".pad":
                     if symbols[1][0] == '[':
-                        output = [("&bytes",[0]*(self.processExpression(symbols[2])-self.pc))]
+                        l = self.processExpression(symbols[2])-self.pc
+                        output = [("&bytes",[0]*l)]
+                        logging.info(f"Padded {l} bytes")
                     else:
-                        output = [("&bytes",[0]*self.processExpression(symbols[1]))]
+                        l = self.processExpression(symbols[1])
+                        output = [("&bytes",[0]*l)]
+                        logging.info(f"Padded {l} bytes")
                     #else:
                     #    logging.error("Invalid values for pad")
                 if opcode == ".byte":
@@ -354,12 +364,16 @@ class Interpreter:
             elif opcode in CPU_OPS:
                 mode = ''
                 param = []
+                #print(opcode)
                 for symbol in symbols[1:]:
+                    #print(f"'{mode}',{symbol}")	
                     if symbol[0] in ADDR_TOKENS or symbol[0] in REGISTERS:
-                        mode += symbol[0]
+                        for s in symbol:
+                            mode += s
                     else:
                         mode += "i"
                         param.append(symbol)
+                #print(mode)
                 if mode in syntax.modes:
                     addr = syntax.modes[mode]
                     if addr in CPU_OPS[opcode]:
