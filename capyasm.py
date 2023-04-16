@@ -17,6 +17,7 @@ import argparse
 import logging
 import parse
 import docs
+import os
 
 def main(args):
     level = logging.INFO
@@ -29,7 +30,7 @@ def main(args):
         return
 
     valid_args = True
-        
+
     if not args.input:
         logging.error("No input file specified") 
         valid_args = False
@@ -44,11 +45,20 @@ def main(args):
             valid_args = False
 
         if valid_args and inter:
-            try:            
-                with open(args.output,"wb") as f:
+            output = args.output
+            
+            try:
+                with open(".temp","wb") as f:
                     inter.run(f)
-            except:
-                logging.error(f"Failed to open output file '{args.output}'")
+
+                if not output:
+                    output = os.path.splitext(args.input)[0] + inter.extension
+
+                os.rename(".temp",output)
+
+            except Exception as e:
+                print(e)
+                logging.error(f"Failed to open output file '{output}'")
         
     if not valid_args:
         logging.info('Usage: capyasm.py -i <inputfile> -o <args.output>')

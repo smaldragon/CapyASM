@@ -65,6 +65,7 @@ class Interpreter:
         self.cur_label = []
         self.labels    = {}
         self.pc        = 0
+        self.extension = ""
         
         self.in_macro  = None
         self.cur_macro = ""
@@ -223,6 +224,7 @@ class Interpreter:
                 if c == "\n":
                     break
                 if c == ";" and string is None:
+                    # Comment
                     break
                 elif c == ":" or c == "," or c == " ":
                     cur_token,tokens=append_token(cur_token,tokens)
@@ -308,7 +310,7 @@ class Interpreter:
                 if opcode == ".cpu":
                     global REGISTERS
                     global CPU_OPS
-                    cpu_macro,cpu_opcodes,registers=syntax.get(symbols[1][0])
+                    cpu_macro,cpu_opcodes,registers,self.extension=syntax.get(symbols[1][0])
                     
                     REGISTERS += registers
                     CPU_OPS.update(cpu_opcodes)

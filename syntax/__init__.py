@@ -5,18 +5,25 @@ from . import wdc65c02
 from . import wdc65816
 from . import huc6280
 from . import rp2a03
+from . import mos6510
 
 def get(cpu):
+    config = None
     if cpu.lower() in ("rc2a03","rc2a07","2a03","2a07"):
-        return rp2a03.macro,rp2a03.opcodes,rp2a03.registers
+        config = rp2a03
     elif cpu.lower() in ("mos6502"):
-        return mos6502.macro,mos6502.opcodes,mos6502.registers
+        config = mos6502
+    elif cpu.lower() in ("mos6510"):
+        config = mos6510
     elif cpu.lower() in ("wdc65c02","65c02"):
-        return wdc65c02.macro,wdc65c02.opcodes,wdc65c02.registers
+        config = wdc65c02
     #elif cpu.lower() in ("wdc65816","65816"):
     #    return wdc65816.macro,wdc65816.opcodes
     elif cpu.lower() in ("huc6280","c6280","6280","pc-engine","pce","turbografx-16"):
-        return huc6280.macro,huc6280.opcodes,huc6280.registers
+        config = huc6280
+    
+    if config:
+        return config.macro, config.opcodes, config.registers, config.extension
     else:
         logging.error(f'Unrecognized cpu')
 

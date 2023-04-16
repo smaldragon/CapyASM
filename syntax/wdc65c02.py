@@ -1,11 +1,7 @@
 """
 Western Design Center 65c02
 """
-from . import mos6502
-
-macro = mos6502.macro
-registers = mos6502.registers
-opcodes = mos6502.opcodes.copy()
+from syntax.mos6502 import *
 
 opcodes.update({
     # Unconditional Branch

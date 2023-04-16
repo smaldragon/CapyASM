@@ -1,4 +1,4 @@
-from . import mos6502
+from syntax.mos6502 import *
 """
 Ricoh 2a03/2a07
 
@@ -10,9 +10,7 @@ Ricoh 2a03/2a07
 - can perform DMA to the NES PPU chip (expected to be mapped at $2000)
 """
 
-registers = mos6502.registers
-
-macro = mos6502.macro+"""
+macro+="""
     ; 2a03/NES Registers
     .var SQ1_VOL     $4000
     .var SQ1_SWEEP   $4001
@@ -53,5 +51,3 @@ macro = mos6502.macro+"""
     .var PPU_ADDR    $2006
     .var PPU_DATA    $2007
 """
-
-opcodes = mos6502.opcodes

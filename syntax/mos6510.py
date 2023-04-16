@@ -1,4 +1,4 @@
-from . import mos6502
+from syntax.mos6502 import *
 """
 MOS 6510
 
@@ -6,11 +6,8 @@ MOS 6510
 - extra I/O port mapped to the start of zero page
 """
 
-registers = mos6502.registers
+macro +="""
 
-macro = mos6502.macro+"""
     .var DDR $00
     .var PORT $01
 """
-
-opcodes = mos6502.opcodes

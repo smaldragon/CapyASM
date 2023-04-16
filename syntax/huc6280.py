@@ -1,7 +1,7 @@
 """
 Hudson C6820 (pc-engine)
 """
-from . import wdc65c02
+from syntax.wdc65c02 import *
 
 macro = """
     .var ZERO_PAGE $2000
@@ -23,7 +23,6 @@ macro = """
     .var MPR7        %1000_0000
 """
 
-opcodes = wdc65c02.opcodes.copy()
 opcodes.update({
     # New HUC6280 Instructions
     "clr":{
