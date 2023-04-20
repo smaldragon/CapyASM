@@ -51,10 +51,25 @@ def main(args):
                 with open(".temp","wb") as f:
                     inter.run(f)
 
-                if not output:
-                    output = os.path.splitext(args.input)[0] + inter.extension
+                if inter.warnings:
+                    logging.info(f"{len(inter.errors)} warnings")
+                    for warning in inter.warnings:
+                        msg = warning[0]
+                        if warning[1] > 0:
+                            msg += f" @ line {warning[1]}"
+                        logging.warning(msg)
+                if inter.errors:
+                    logging.info(f"{len(inter.errors)} errors")
+                    for error in inter.errors:
+                        msg = error[0]
+                        if error[1] > 0:
+                            msg += f" @ line {error[1]}"
+                        logging.error(msg)
+                else:
+                    if not output:
+                        output = os.path.splitext(args.input)[0] + inter.extension
 
-                os.rename(".temp",output)
+                    os.rename(".temp",output)
 
             except Exception as e:
                 print(e)

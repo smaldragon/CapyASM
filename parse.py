@@ -69,6 +69,14 @@ class Interpreter:
         
         self.in_macro  = None
         self.cur_macro = ""
+
+        self.errors =  []
+        self.warnings = []
+
+    def warning(self,message,line=-1):
+        self.warnings.append((message,line))
+    def error(self,message,line=-1):
+        self.errors.append((message,line))
     
     #def log(self,message):
     #    logging.info(colorama.Fore.YELLOW + "LOG:" + message + colorama.Fore.RESET )
@@ -86,7 +94,7 @@ class Interpreter:
                 logging.debug(f"TOKENS: {tokens}")
                 symbols = self.getSymbols(tokens)
                 logging.debug(f"SYMBOLS {symbols}")
-                lineout = (self.getCompile(symbols),self.cur_label.copy())
+                lineout = (self.getCompile(symbols),self.cur_label.copy(),self.cur_line)
                 logging.debug(f"OUT {lineout}")
                 pass_1.append(lineout)
             else:
@@ -120,6 +128,8 @@ class Interpreter:
                     elif d[0] == "&rel":
                         v = self.processExpression(d[1])-(p[0][1]+len(cur_int)+1)
                         logging.debug(f"offset is {v}")
+                        if v > 127 or v < -128:
+                            self.error(f"Out of Range Branch {v}",p[2])
                         cur_int.append(v)
                     elif d[0] == "&bytes":
                         cur_int.extend(d[1])
@@ -129,13 +139,16 @@ class Interpreter:
         # Pass 3 - Output to binary file                
         logging.info("PASS 3 - File Output...")
         
-        for b in pass_2:    
+        out_bytes = []
+        for b in pass_2:
             if b < 0:
                 b=256+b
             if b < 0 or b > 255:
-                logging.error("INVALID BYTE")
-                sys.exit(2)
-            else:
+                self.error("INVALID BYTE")
+            out_bytes.append(b)
+            
+        if len(self.errors) == 0:
+            for b in out_bytes:
                 out_f.write(bytearray([b]))
 
 
@@ -320,7 +333,7 @@ class Interpreter:
                         value = self.processExpression(symbols[2])
                         self.variables[symbols[1][0]] = value
                     except:
-                        logging.error("Unable to process variable")
+                        self.error("Unable to process variable")
                         sys.exit(2)
                 if opcode == ".org":
                     self.pc = self.processExpression(symbols[2])
@@ -398,11 +411,9 @@ class Interpreter:
                                 output.append(("&high",param[param_i]))
                                 param_i += 1
                     else:
-                        logging.error(f"Opcode {opcode} does not support Addressing Mode {addr}")
-                        sys.exit(2)
+                        self.error(f"Opcode {opcode} does not support Addressing Mode {addr}")
                 else:
-                    logging.error(f"Unkown Addressing Mode {mode}")
-                    sys.exit(2)
+                    self.error(f"Unkown Addressing Mode {mode}")
                         
                 logging.debug(f"mode: '{mode}'")
             elif opcode in self.macros:
@@ -410,11 +421,9 @@ class Interpreter:
                 try:
                     self.lines = self.lines[:self.cur_line+1] + self.macros[opcode].format(*(values)).split("\n") + self.lines[self.cur_line+1:]
                 except:
-                    logging.error("Invalid Macro")
-                    sys.exit(2) 
+                    self.error("Invalid Macro")
             else:
-                logging.error(f"Unkown Opcode '{opcode}'")
-                sys.exit(2)
+                self.error(f"Unkown Opcode '{opcode}'")
         for v in output:
             if v[0] == "&bytes":
                 self.pc += len(v[1])
