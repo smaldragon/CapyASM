@@ -11,7 +11,7 @@ Ricoh 2a03/2a07
 """
 
 macro+="""
-    ; 2a03/NES Registers
+    # 2a03/NES Registers
     .var SQ1_VOL     $4000
     .var SQ1_SWEEP   $4001
     .var SQ1_LO      $4002
@@ -23,12 +23,12 @@ macro+="""
     .var SQ2_HI      $4007
     
     .var TRI_LINEAR  $4008
-    ;
+    
     .var TRI_LO      $400A
     .var TRI_HI      $400B
     
     .var NOISE_VOL   $400C
-    ;
+    
     .var NOISE_LO    $400E
     .var NOISE_HI    $400F
 

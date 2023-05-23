@@ -30,7 +30,7 @@ def operator_b3(a):
     return (a >> 24) & 255
 
 PRE_OPS = {
-    "~":operator.neg,
+    "-":operator.neg,
 }
 POST_OPS = {
     ".b0":operator_b0,
@@ -50,8 +50,8 @@ BIN_OPS = {
 
 ALL_OPS = {}; ALL_OPS.update(PRE_OPS) ; ALL_OPS.update(POST_OPS) ; ALL_OPS.update(BIN_OPS)
 
-ADDR_TOKENS = ["<",">","(",")","[","]","+X","+Y","#",'+']
-REGISTERS = ["A","X","Y","P","C","D","I","V"]
+ADDR_TOKENS = []
+REGISTERS = []
 
 class Interpreter:
     def __init__(self,lines,folder):
@@ -72,17 +72,38 @@ class Interpreter:
 
         self.errors =  []
         self.warnings = []
+        self.success = True
 
     def warning(self,message,line=-1):
         self.warnings.append((message,line))
     def error(self,message,line=-1):
         self.errors.append((message,line))
+        self.success = False
     
     #def log(self,message):
     #    logging.info(colorama.Fore.YELLOW + "LOG:" + message + colorama.Fore.RESET )
     #def error(self,message):
     #    logging.error(colorama.Back.RED + "ERROR:" + message + colorama.Back.RESET)
     def run(self,out_f):
+        
+        pass_1 = self.first_pass()
+        if not self.success:
+            logging.error("Failed on 1st Pass")
+            return
+            
+        pass_2 = self.second_pass(pass_1)
+        if not self.success:
+            logging.error("Failed on 2nd Pass")
+            return
+        
+        self.third_pass(pass_2,out_f)
+        if not self.success:
+            logging.error("Failed on 3rd Pass")
+            return
+
+        logging.info("Done!")
+        
+    def first_pass(self):
         # Pass 1 - Go line by line and execute it
         logging.info("PASS 1 - General Pass...")
         pass_1 = []
@@ -90,13 +111,16 @@ class Interpreter:
             if self.in_macro is None:
                 logging.debug("\n")
                 logging.debug("LINE:"+self.lines[self.cur_line].strip())
-                tokens  = self.getTokens(self.lines[self.cur_line])
+                tokens,next_line  = self.getTokens(self.lines[self.cur_line])
                 logging.debug(f"TOKENS: {tokens}")
                 symbols = self.getSymbols(tokens)
                 logging.debug(f"SYMBOLS {symbols}")
                 lineout = (self.getCompile(symbols),self.cur_label.copy(),self.cur_line)
                 logging.debug(f"OUT {lineout}")
                 pass_1.append(lineout)
+
+                if next_line:
+                    self.lines.insert(self.cur_line+1,next_line)
             else:
                 if self.lines[self.cur_line].strip() == ".endmacro":
                     self.macros[self.in_macro] = self.cur_macro
@@ -107,11 +131,15 @@ class Interpreter:
             self.cur_line += 1
         logging.debug(pass_1)
         
-        #logging.debug(f"BINARY: {pass_1}")
+        return pass_1
+        
+    def second_pass(self,pass_1):
+                #logging.debug(f"BINARY: {pass_1}")
         # Pass 2 - Calculate math, labels and relatives
         logging.info("PASS 2 - Inserting Labels and Relatives...")
         pass_2 = []
         logging.debug(self.labels)
+
         for _,p in enumerate(pass_1):
             if p[0]:
                 cur_int = []
@@ -134,7 +162,8 @@ class Interpreter:
                     elif d[0] == "&bytes":
                         cur_int.extend(d[1])
                 pass_2.extend(cur_int)
-        
+        return pass_2
+    def third_pass(self, pass_2, out_f):
         #logging.debug(f"BINARY: {pass_2}")
         # Pass 3 - Output to binary file                
         logging.info("PASS 3 - File Output...")
@@ -150,12 +179,12 @@ class Interpreter:
         if len(self.errors) == 0:
             for b in out_bytes:
                 out_f.write(bytearray([b]))
-
-
-        logging.info("Finished Running!")
+                
+        return
                     
     def processExpression(self,expr):
         def parse_value(value):
+            logging.debug("parsing "+str(expr))
             out = [value]
             if value[0] in ("'",'"'):
                 for c in value[1:]:
@@ -168,7 +197,9 @@ class Interpreter:
                 out.append(int(value[1:],16))
             elif value[0] == "%":
                 out.append(int(value[1:],2))
-                
+            else:
+                return None
+            
             return out
         
         symbols = []
@@ -198,6 +229,9 @@ class Interpreter:
                     #value = [token,self.labels[token]]
                 if not is_label:
                     value = parse_value(token)
+
+                    if not value:
+                        logging.error(f"Unable to parse {token} in {expr}")
                 
             # BinOp
             if operand in BIN_OPS and value is not None and i >= 2:
@@ -217,6 +251,8 @@ class Interpreter:
         cur_token = ""
         tokens = []
         string = None
+
+        next_line = ""
         
         def append_token(cur_token,tokens):
             if cur_token != "":
@@ -224,7 +260,7 @@ class Interpreter:
             cur_token = ""
             return cur_token,tokens
             
-        for _,c in enumerate(line):
+        for i,c in enumerate(line):
             # We are in a string
             if string is not None:
                 if c == string:
@@ -236,8 +272,12 @@ class Interpreter:
             else:
                 if c == "\n":
                     break
-                if c == ";" and string is None:
+                elif c == "#":
                     # Comment
+                    break
+                    
+                elif c == ";":
+                    next_line = line[i+1:]
                     break
                 elif c == ":" or c == "," or c == " ":
                     cur_token,tokens=append_token(cur_token,tokens)
@@ -245,7 +285,7 @@ class Interpreter:
                     cur_token,tokens=append_token(cur_token,tokens)
                     cur_token += c
                     string = c
-                elif c in ("[","]","(",")","<",">","+","-","*","/","#") or c in ALL_OPS:
+                elif c in ADDR_TOKENS or c in ALL_OPS:
                     cur_token,tokens=append_token(cur_token,tokens)
                     cur_token = c
                     cur_token,tokens=append_token(cur_token,tokens)
@@ -256,7 +296,8 @@ class Interpreter:
                     cur_token += c
         
         cur_token,tokens=append_token(cur_token,tokens)
-        return tokens
+        
+        return tokens, next_line
     # Step 2 - Take tokens and return calculated symbols with variables and compile-time math
     def getSymbols(self,tokens):
         symbols = []
@@ -273,9 +314,7 @@ class Interpreter:
                 cur_symbol = []
                 continue
             
-            if token in PRE_OPS:
-                symbols.append(cur_symbol.copy())
-                cur_symbol = []
+            if token in PRE_OPS and len(cur_symbol) == 0:
                 prev_token = True
             elif token in POST_OPS:
                 pass
@@ -323,10 +362,12 @@ class Interpreter:
                 if opcode == ".cpu":
                     global REGISTERS
                     global CPU_OPS
-                    cpu_macro,cpu_opcodes,registers,self.extension=syntax.get(symbols[1][0])
+                    global ADDR_TOKENS
+                    cpu_macro,cpu_opcodes,registers,self.extension,addr_tokens=syntax.get(symbols[1][0])
                     
                     REGISTERS += registers
                     CPU_OPS.update(cpu_opcodes)
+                    ADDR_TOKENS += addr_tokens
                     self.lines = self.lines[:self.cur_line+1] + cpu_macro.split("\n") + self.lines[self.cur_line+1:]
                 if opcode == ".var":
                     try:
@@ -413,7 +454,8 @@ class Interpreter:
                     else:
                         self.error(f"Opcode {opcode} does not support Addressing Mode {addr}")
                 else:
-                    self.error(f"Unkown Addressing Mode {mode}")
+                    
+                    self.error(f"Unkown Addressing Mode {mode} in {symbols}")
                         
                 logging.debug(f"mode: '{mode}'")
             elif opcode in self.macros:

@@ -37,7 +37,7 @@ In CapyASM the type of addressing to be used is always written explicitly, avoid
 * **Indexed Indirect** - `LDA [<$10+x>]`
 * **Indirect Indexed** - `LDA [<$10>+y]`
 * **Zero Page Relative** (65c02) - `BBR4 <$20>:(label)`
-* **Block Move** (HuC6280)- `TIA [$2000]:[$3000]:#$1000`
+* **Block Move** (HuC6280)- `TIA [$2000]:[$3000]:@$1000`
 
 ## Data types
 
@@ -58,6 +58,8 @@ In CapyASM the type of addressing to be used is always written explicitly, avoid
 * `.var NAME $xx`            - Define variable
 * `.macro name $xx,$xx` - Define Macro
 * `.cpu 6502`           - Set the CPU to use
+* `# Comment`
+* `clc ; adc 2`         - Multiple commands can be written on the same line using semicolons
 
 ## Aliases
 

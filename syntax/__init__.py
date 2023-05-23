@@ -23,7 +23,7 @@ def get(cpu):
         config = huc6280
     
     if config:
-        return config.macro, config.opcodes, config.registers, config.extension
+        return config.macro, config.opcodes, config.registers, config.extension, config.addr_tokens
     else:
         logging.error(f'Unrecognized cpu')
 
@@ -101,7 +101,7 @@ modes = {
     "V":"V",
     
     # HuC6820
-    "[i][i]#i":"bmv",
+    "[i][i]@i":"bmv",
 }
 
 opcodes = {

@@ -14,6 +14,7 @@ macro = """
 """
 extension = ".65x"
 registers = ["A","X","Y","P","C","D","I","V"]
+addr_tokens = ["<",">","(",")","[","]","+X","+Y","#",'+']
 
 opcodes = {
     # opcodes
@@ -249,10 +250,10 @@ opcodes = {
         "A":    [0x68],
         "P":    [0x28],
     },
-    "pha":{
+    "pla":{
         "i":    [0x68]
     },
-    "php":{
+    "plp":{
         "i":    [0x28]
     },
     "rol":{

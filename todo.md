@@ -1,3 +1,4 @@
-* [ ] Format logging text
-* [ ] Switch command line to better program
-* [ ] Give line numbers for errors (if possible)
+* [ ] Support for Z80 CPU
+* [ ] Support for 65c816 CPU
+* [ ] Line numbers in error messages
+* [ ] Change commands with multiple variables to use commas instead of ":" (same as macros)

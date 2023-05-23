@@ -1,7 +1,7 @@
-; 32-byte iNES header
+# 32-byte iNES header
     .byte 'NES',$1a
-    .byte 2             ; 32kb prg rom
-    .byte 2             ; 16Kb chr rom
+    .byte 2             # 32kb prg rom
+    .byte 2             # 16Kb chr rom
     .byte %00000001
     .byte %00000000
     .byte 0
@@ -9,13 +9,13 @@
 
     .cpu 2a03
 
-; Macro for writing a byte to memory
+# Macro for writing a byte to memory
 .macro wrb
     lda {0}
     sta {1}
 .endmacro
-; Variables - these are the memory address used for various functions
-; Zero Page
+# Variables - these are the memory address used for various functions
+# Zero Page
 .var ball_x            $0
 .var ball_y            $1
 .var ball_dx           $2
@@ -30,22 +30,22 @@
 .var controller_SELECT $A
 .var controller_B      $B
 .var controller_A      $C
-; WRAM
+# WRAM
 .var shadow_oam        $200
 .var ball_hist_x       $300
 .var ball_hist_y       $400
 
-; Prg ROM
+# Prg ROM
 .org [$8000]
-; Init Sequence
+# Init Sequence
 _reset
     sei
     ldx $40
     stx [$4017]
     ldx $ff
     txs
-    inc X            ; make x zero
-    stx [PPU_CTRL]   ; disable
+    inc X            # make x zero
+    stx [PPU_CTRL]   # disable
     stx [PPU_MASK]
     stx [$4010]
 
@@ -74,27 +74,27 @@ __vblankwait2
     bit [PPU_STATUS]
     bpl (vblankwait2)
 
-    ; Define Palette Colors
+    # Define Palette Colors
     wrb $3F,[PPU_ADDR]   
     wrb $00,[PPU_ADDR]
     wrb $15,[PPU_DATA]
     wrb $20,[PPU_DATA]
 
-    ; Define Palette Colors
+    # Define Palette Colors
     wrb $3F,[PPU_ADDR]   
     wrb $11,[PPU_ADDR]
     wrb $20,[PPU_DATA]
     wrb $10,[PPU_DATA]
    
-    ; Set scroll
+    # Set scroll
     lda $00
     sta [PPU_SCROLL]
     sta [PPU_SCROLL]
 
-    ; Set Main Sprite to tile 1
+    # Set Main Sprite to tile 1
     wrb $1,[$201]
     ldx $04
-    ; Set Follow Sprites to tile 2
+    # Set Follow Sprites to tile 2
 __sprite_loop
     inx
     wrb $2,[shadow_oam+X]
@@ -103,18 +103,18 @@ __sprite_loop
     inx
     bzc (sprite_loop)
     
-    ; Activate Background
+    # Activate Background
     lda %000_11_11_0
     sta [PPU_MASK]
 
-    ; Enable ppu interrupts
+    # Enable ppu interrupts
     wrb %1_0_0_0_0_0_00,[PPU_CTRL]
 
 __forever
     jmp [forever]
 
 _nmi
-    ; Perform OAM Sprite DMA
+    # Perform OAM Sprite DMA
     wrb $0,[OAM_ADDR]
     wrb $2,[OAM_DMA]
 
@@ -123,11 +123,11 @@ _nmi
     wrb <ball_x>,[ball_hist_x+X]
     wrb <ball_y>,[ball_hist_y+X]
 
-    ; Ball 1
-    ; X
+    # Ball 1
+    # X
     lda [ball_hist_x+X]
     sta [$203]
-    ; Y
+    # Y
     lda [ball_hist_y+X]
     sta [$200]
 
@@ -180,15 +180,15 @@ ___next4
 
     rti
 
-; Subroutine that reads the controller
-; each individual button is stored in a seperate zp addresses
-; due to nes quirks the button value is either $40 or $41
+# Subroutine that reads the controller
+# each individual button is stored in a seperate zp addresses
+# due to nes quirks the button value is either $40 or $41
 _controller_read
-    ; strobe the controller to read in new values
+    # strobe the controller to read in new values
     wrb $01,[JOY1]
     lsr A
     sta [JOY1]
-    ; loop 8 times to grab each button
+    # loop 8 times to grab each button
     ldx 8
 __loop
     lda [JOY1]
@@ -197,19 +197,19 @@ __loop
     bzc (loop)
     rts
 
-; Vectors
+# Vectors
     .pad [VECTORS]
     .word nmi
     .word reset
     .word reset
 
-; Chr ROM
+# Chr ROM
     .org [0]
     .pad 16
-    ; Ball Main
+    # Ball Main
     .byte %00111100,%01111110,%11111111,%11111111,%11111111,%11111111,%01111110,%00111100
     .pad 8
-    ; Ball Shadow
+    # Ball Shadow
     .pad 8
     .byte %00111100,%01111110,%11111111,%11111111,%11111111,%11111111,%01111110,%00111100
     .pad [$4000]
