@@ -13,6 +13,7 @@ ASM_OPS = [
     ".asm",
     ".bin",
     ".macro",
+    ".endmacro",
 ]
 
 CPU_OPS = {}
@@ -124,6 +125,7 @@ class Interpreter:
             else:
                 if self.lines[self.cur_line].strip() == ".endmacro":
                     self.macros[self.in_macro] = self.cur_macro
+                    self.cur_macro = ""
                     self.in_macro = None
                 else:
                     self.cur_macro+=self.lines[self.cur_line]
@@ -462,8 +464,8 @@ class Interpreter:
                 values = self.lines[self.cur_line].strip().split(" ")[1].split(",")
                 try:
                     self.lines = self.lines[:self.cur_line+1] + self.macros[opcode].format(*(values)).split("\n") + self.lines[self.cur_line+1:]
-                except:
-                    self.error("Invalid Macro")
+                except Exception as e:
+                    self.error(f"Invalid Macro {e}")
             else:
                 self.error(f"Unkown Opcode '{opcode}'")
         for v in output:
