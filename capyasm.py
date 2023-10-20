@@ -18,6 +18,7 @@ import logging
 import parse
 import docs
 import os
+import sys
 
 def main(args):
     level = logging.INFO
@@ -50,7 +51,7 @@ def main(args):
             try:
                 with open(".temp","wb") as f:
                     inter.run(f)
-
+                    
                 if inter.warnings:
                     logging.info(f"{len(inter.errors)} warnings")
                     for warning in inter.warnings:
@@ -65,6 +66,7 @@ def main(args):
                         if error[1] > 0:
                             msg += f" @ line {error[1]}"
                         logging.error(msg)
+                    sys.exit(1)
                 else:
                     if not output:
                         output = os.path.splitext(args.input)[0] + inter.extension
