@@ -406,16 +406,18 @@ class Interpreter:
                     for s in symbols[1:]:
                         output.extend([("&low",s),("&high",s)])
                 if opcode == ".asm":
-                    with open(self.folder+symbols[1][0][1:]) as f:
+                    filename = f"{self.folder+symbols[1][0][0:]}.asm"
+                    with open(filename) as f:
                         self.lines = self.lines[:self.cur_line+1] + f.read().split("\n") + self.lines[self.cur_line+1:]
-                        logging.info(f" Inserted assembly file \"{symbols[1][0][1:]}\"")
+                        logging.info(f"Inserted assembly file \"{filename}\"")
                 if opcode == ".bin":
-                    with open(self.folder+symbols[1][0][1:],"rb") as f:
+                    filename = f"{self.folder+symbols[1][0][0:]}.bin"
+                    with open(filename,"rb") as f:
                         bn = []
                         for b in f.read():
                             bn.append(b)
                         output.append(("&bytes",bn))
-                        logging.info(f" Inserted binary file \"{symbols[1][0][1:]}\"")
+                        logging.info(f"Inserted binary file \"{filename}\"")
                 if opcode == ".macro":
                     self.in_macro = symbols[1][0]
             # CPU INSTRUCTION
