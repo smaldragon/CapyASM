@@ -463,7 +463,10 @@ class Interpreter:
                         
                 logging.debug(f"mode: '{mode}'")
             elif opcode in self.macros:
-                values = self.lines[self.cur_line].strip().split(" ")[1].split(",")
+                macro_line = self.lines[self.cur_line].strip().split(" ")
+                values = []
+                if len(macro_line) == 2:
+                    values = macro_line[1].split(",")
                 try:
                     self.lines = self.lines[:self.cur_line+1] + self.macros[opcode].format(*(values)).split("\n") + self.lines[self.cur_line+1:]
                 except Exception as e:
