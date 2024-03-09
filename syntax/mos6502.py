@@ -3,14 +3,14 @@ MOS 6510
 """
 
 macro = """
-    .var ZERO_PAGE   $00
-    .var STACK       $100
+    .val ZERO_PAGE   $00
+    .val STACK       $100
 
-    .var VECTORS     $FFFA
-    .var VECTOR_NMI  $FFFA
-    .var VECTOR_RST  $FFFC
-    .var VECTOR_IRQ  $FFFE
-    .var VECTOR_BRK  $FFFE
+    .val VECTORS     $FFFA
+    .val VECTOR_NMI  $FFFA
+    .val VECTOR_RST  $FFFC
+    .val VECTOR_IRQ  $FFFE
+    .val VECTOR_BRK  $FFFE
 """
 extension = ".65x"
 registers = ["A","X","Y","P","C","D","I","V"]
@@ -61,14 +61,16 @@ opcodes = {
         "r":    [0xD0,"r"],
         "#":    [0xD0,"i"]
     },
-    "beq":{
-        "r":    [0xF0,"r"],
-        "#":    [0xF0,"i"]
-    },
+    # BNE ALIAS
     "bzc":{
         "r":    [0xD0,"r"],
         "#":    [0xD0,"i"]
     },
+    "beq":{
+        "r":    [0xF0,"r"],
+        "#":    [0xF0,"i"]
+    },
+    # BEQ ALIAS
     "bzs":{
         "r":    [0xF0,"r"],
         "#":    [0xF0,"i"]
@@ -77,15 +79,17 @@ opcodes = {
         "r":    [0x10,"r"],
         "#":    [0x10,"i"]
     },
+    # BPL ALIAS
+    "bmc":{
+        "r":    [0x10,"r"],
+        "#":    [0x10,"i"]
+    },
     "bmi":{
         "r":    [0x30,"r"],
         "#":    [0x30,"i"]
     },
-    "bnc":{
-        "r":    [0x10,"r"],
-        "#":    [0x10,"i"]
-    },
-    "bns":{
+    # BMI ALIAS
+    "bms":{
         "r":    [0x30,"r"],
         "#":    [0x30,"i"]
     },

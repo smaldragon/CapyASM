@@ -55,7 +55,8 @@ In CapyASM the type of addressing to be used is always written explicitly, avoid
 * `.asm "file.asm"`     - Inserts an assembly file
 * `.org [$xx]`          - Sets the Program Counter
 * `.pad $xx|pad $[xx]`  - Adds zeros to the file, either a set amount or until a certain PC is reached
-* `.var NAME $xx`            - Define variable
+* `.val NAME $xx`       - Define a constant value
+* `.var NAME SIZE`      - Define a memory variable of set byte length
 * `.macro name $xx,$xx` - Define Macro
 * `.cpu 6502`           - Set the CPU to use
 * `# Comment`

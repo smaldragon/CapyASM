@@ -6,6 +6,7 @@ import sys
 ASM_OPS = [
     ".cpu",
     ".var",
+    ".val",
     ".org",
     ".pad",
     ".byte",
@@ -128,7 +129,7 @@ class Interpreter:
                     self.cur_macro = ""
                     self.in_macro = None
                 else:
-                    self.cur_macro+=self.lines[self.cur_line]
+                    self.cur_macro+=self.lines[self.cur_line] + "\n"
                 
             self.cur_line += 1
         logging.debug(pass_1)
@@ -371,13 +372,25 @@ class Interpreter:
                     CPU_OPS.update(cpu_opcodes)
                     ADDR_TOKENS += addr_tokens
                     self.lines = self.lines[:self.cur_line+1] + cpu_macro.split("\n") + self.lines[self.cur_line+1:]
-                if opcode == ".var":
+                if opcode == ".val":
                     try:
                         value = self.processExpression(symbols[2])
                         self.variables[symbols[1][0]] = value
                     except:
                         self.error("Unable to process variable")
                         sys.exit(2)
+                if opcode == ".var":
+                    try:
+                        mvar_size = 1
+                        if len(symbols) > 2:
+                            mvar_size = self.processExpression(symbols[2])
+                        
+                        self.variables[symbols[1][0]] = self.pc
+                        self.pc += mvar_size
+                    except:
+                        self.error("Unable to process variable")
+                        sys.exit(2)
+                
                 if opcode == ".org":
                     self.pc = self.processExpression(symbols[2])
                 if opcode == ".pad":

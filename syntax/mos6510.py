@@ -8,6 +8,6 @@ MOS 6510
 
 macro +="""
 
-    .var DDR $00
-    .var PORT $01
+    .val DDR $00
+    .val PORT $01
 """
