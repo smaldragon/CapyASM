@@ -1,4 +1,3 @@
-from syntax.mos6502 import *
 """
 Ricoh 2a03/2a07
 
@@ -9,6 +8,7 @@ Ricoh 2a03/2a07
 - contains an I/O port
 - can perform DMA to the NES PPU chip (expected to be mapped at $2000)
 """
+from syntax.mos6502 import *
 
 macro+="""
     # 2a03/NES Registers
