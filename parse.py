@@ -15,6 +15,8 @@ ASM_OPS = [
     ".bin",
     ".macro",
     ".endmacro",
+    ".block",
+    ".endblock",
 ]
 
 CPU_OPS = {}
@@ -67,6 +69,8 @@ class Interpreter:
         self.cur_label = []
         self.labels    = {}
         self.pc        = 0
+        self.lastpc    = 0
+        self.blockpc   = 0
         self.extension = ""
         
         self.in_macro  = None
@@ -393,6 +397,12 @@ class Interpreter:
                 
                 if opcode == ".org":
                     self.pc = self.processExpression(symbols[2])
+                if opcode == ".block":
+                    self.lastpc.append(self.pc)
+                    self.pc = self.processExpression(symbols[2])
+                    self.blockpc.append(self.pc)
+                if opcode == ".endblock":
+                    self.pc = self.lastpc.pop() + (self.pc-self.blockpc.pop())
                 if opcode == ".pad":
                     if symbols[1][0] == '[':
                         l = self.processExpression(symbols[2])-self.pc
@@ -424,7 +434,11 @@ class Interpreter:
                         self.lines = self.lines[:self.cur_line+1] + f.read().split("\n") + self.lines[self.cur_line+1:]
                         logging.info(f"Inserted assembly file \"{filename}\"")
                 if opcode == ".bin":
-                    filename = f"{self.folder+symbols[1][0][0:]}.bin"
+                    name = symbols[1][0][0:].strip('" ')
+                    if len(name.split(".")) == 1:
+                        filename = f"{self.folder+name}.bin"
+                    else:
+                        filename = f"{self.folder+name}"
                     with open(filename,"rb") as f:
                         bn = []
                         for b in f.read():
@@ -476,10 +490,11 @@ class Interpreter:
                         
                 logging.debug(f"mode: '{mode}'")
             elif opcode in self.macros:
-                macro_line = self.lines[self.cur_line].strip().split(" ")
+                #macro_line = self.lines[self.cur_line].strip().split(" ")
                 values = []
-                if len(macro_line) == 2:
-                    values = macro_line[1].split(",")
+                for i,s in enumerate(symbols):
+                    if i > 0:
+                        values.extend(s)
                 try:
                     self.lines = self.lines[:self.cur_line+1] + self.macros[opcode].format(*(values)).split("\n") + self.lines[self.cur_line+1:]
                 except Exception as e:

@@ -41,6 +41,7 @@ macro+="""
     .val SND_CHN     $4015
     .val JOY1        $4016
     .val JOY2        $4017
+    .val APU_FRAME   $4017
 
     .val PPU_CTRL    $2000
     .val PPU_MASK    $2001
