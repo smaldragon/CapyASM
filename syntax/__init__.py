@@ -6,6 +6,7 @@ from . import wdc65816
 from . import huc6280
 from . import rp2a03
 from . import mos6510
+from . import kitty
 
 def get(cpu):
     config = None
@@ -21,6 +22,8 @@ def get(cpu):
     #    return wdc65816.macro,wdc65816.opcodes
     elif cpu.lower() in ("huc6280","c6280","6280","pc-engine","pce","turbografx-16"):
         config = huc6280
+    elif cpu.lower() == "kitty":
+        config = kitty
     
     if config:
         return config.macro, config.opcodes, config.registers, config.extension, config.addr_tokens

@@ -69,8 +69,8 @@ class Interpreter:
         self.cur_label = []
         self.labels    = {}
         self.pc        = 0
-        self.lastpc    = 0
-        self.blockpc   = 0
+        self.lastpc    = []
+        self.blockpc   = []
         self.extension = ""
         
         self.in_macro  = None
