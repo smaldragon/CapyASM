@@ -6,8 +6,11 @@ import sys
 ASM_OPS = [
     ".cpu",
     ".var",
+    ".zvar",
+    ".zp",
     ".val",
     ".org",
+    ".zorg",
     ".pad",
     ".byte",
     ".word",
@@ -69,6 +72,7 @@ class Interpreter:
         self.cur_label = []
         self.labels    = {}
         self.pc        = 0
+        self.zpc	   = 0
         self.lastpc    = []
         self.blockpc   = []
         self.extension = ""
@@ -117,7 +121,7 @@ class Interpreter:
             if self.in_macro is None:
                 logging.debug("\n")
                 logging.debug("LINE:"+self.lines[self.cur_line].strip())
-                tokens,next_line  = self.getTokens(self.lines[self.cur_line])
+                tokens,next_line  = self.getTokens(self.lines[self.cur_line].strip(' \t\n'))
                 logging.debug(f"TOKENS: {tokens}")
                 symbols = self.getSymbols(tokens)
                 logging.debug(f"SYMBOLS {symbols}")
@@ -394,9 +398,25 @@ class Interpreter:
                     except:
                         self.error("Unable to process variable")
                         sys.exit(2)
+                # 6502 Zero Page Variables
+                if opcode in (".zvar",".zp"):
+                    try:
+                        mvar_size = 1
+                        if len(symbols) > 2:
+                            mvar_size = self.processExpression(symbols[2])
+                        
+                        self.variables[symbols[1][0]] = self.zpc
+                        self.zpc += mvar_size
+                        if self.zpc > 256:
+                        	self.warning(f"ZP Variables exceed page size! ZPC={self.zpc}")
+                    except:
+                        self.error("Unable to process variable")
+                        sys.exit(2)
                 
                 if opcode == ".org":
                     self.pc = self.processExpression(symbols[2])
+                if opcode == ".zorg":
+                    self.zpc = self.processExpression(symbols[2])
                 if opcode == ".block":
                     self.lastpc.append(self.pc)
                     self.pc = self.processExpression(symbols[2])
