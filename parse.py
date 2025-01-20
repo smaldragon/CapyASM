@@ -20,6 +20,7 @@ ASM_OPS = [
     ".endmacro",
     ".block",
     ".endblock",
+    ".padpage",
 ]
 
 CPU_OPS = {}
@@ -434,6 +435,14 @@ class Interpreter:
                         logging.info(f"Padded {l} bytes")
                     #else:
                     #    logging.error("Invalid values for pad")
+                if opcode == ".padpage":
+                    fill = 0
+                    if len(symbols) == 2:
+                        fill = self.processExpression(symbols[1])
+                    if self.pc & 0x00FF != 0:
+                        l = 256 - (self.pc & 0x00FF)
+                        output = [("&bytes",[fill]*l)]
+                        logging.info(f"Page aligned at {hex(self.pc)} with {l} bytes")
                 if opcode == ".byte":
                     for s in symbols[1:]:
                         if s[0][0] in ("'",'"'):
