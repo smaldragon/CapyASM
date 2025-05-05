@@ -9,31 +9,27 @@
 
     .cpu 2a03
 
-# Macro for writing a byte to memory
-.macro wrb
-    lda {0}
-    sta {1}
-.endmacro
 # Variables - these are the memory address used for various functions
 # Zero Page
-.var ball_x            $0
-.var ball_y            $1
-.var ball_dx           $2
-.var ball_dy           $3
-.var ball_hist_pointer $4
-.var controller        $5
-.var controller_RIGHT  $5
-.var controller_LEFT   $6
-.var controller_DOWN   $7
-.var controller_UP     $8
-.var controller_START  $9
-.var controller_SELECT $A
-.var controller_B      $B
-.var controller_A      $C
+.zp ball_x
+.zp ball_y           
+.zp ball_dx          
+.zp ball_dy          
+.zp ball_hist_pointer
+.zp controller        0
+.zp controller_RIGHT
+.zp controller_LEFT
+.zp controller_DOWN
+.zp controller_UP
+.zp controller_START
+.zp controller_SELECT
+.zp controller_B     
+.zp controller_A    
 # WRAM
-.var shadow_oam        $200
-.var ball_hist_x       $300
-.var ball_hist_y       $400
+.org [$200]
+.var shadow_oam        256
+.var ball_hist_x       256
+.var ball_hist_y       256
 
 # Prg ROM
 .org [$8000]
@@ -67,24 +63,36 @@ __clrmem
     inx
     bne (clrmem)
 
-    wrb 0,<ball_dx>
-    wrb 0,<ball_dy>
+    lda 0; sta <ball_dx>
+    lda 0; sta <ball_dy>
 
 __vblankwait2
     bit [PPU_STATUS]
     bpl (vblankwait2)
+    
+    # Fill Nametables with 0 bytes
+    bit [PPU_STATUS]
+    lda $20; sta [PPU_ADDR]
+    lda $00; sta [PPU_ADDR]
+    ldy 2048/256
+    __clr
+      ldx 0
+      ___loop
+        sta [PPU_DATA]
+      inc X; bne (loop)
+    dec Y; bne (clr)
+    
+    # Define Palette Colors
+    lda $3F; sta [PPU_ADDR]   
+    lda $00; sta [PPU_ADDR]
+    lda $15; sta [PPU_DATA]
+    lda $20; sta [PPU_DATA]
 
     # Define Palette Colors
-    wrb $3F,[PPU_ADDR]   
-    wrb $00,[PPU_ADDR]
-    wrb $15,[PPU_DATA]
-    wrb $20,[PPU_DATA]
-
-    # Define Palette Colors
-    wrb $3F,[PPU_ADDR]   
-    wrb $11,[PPU_ADDR]
-    wrb $20,[PPU_DATA]
-    wrb $10,[PPU_DATA]
+    lda $3F; sta [PPU_ADDR]   
+    lda $11; sta [PPU_ADDR]
+    lda $20; sta [PPU_DATA]
+    lda $10; sta [PPU_DATA]
    
     # Set scroll
     lda $00
@@ -92,12 +100,12 @@ __vblankwait2
     sta [PPU_SCROLL]
 
     # Set Main Sprite to tile 1
-    wrb $1,[$201]
+    lda $1; sta [$201]
     ldx $04
     # Set Follow Sprites to tile 2
 __sprite_loop
     inx
-    wrb $2,[shadow_oam+X]
+    lda $2; sta [shadow_oam+X]
     inx
     inx
     inx
@@ -108,20 +116,20 @@ __sprite_loop
     sta [PPU_MASK]
 
     # Enable ppu interrupts
-    wrb %1_0_0_0_0_0_00,[PPU_CTRL]
+    lda %1_0_0_0_0_0_00; sta [PPU_CTRL]
 
 __forever
     jmp [forever]
 
 _nmi
     # Perform OAM Sprite DMA
-    wrb $0,[OAM_ADDR]
-    wrb $2,[OAM_DMA]
+    lda $0; sta [OAM_ADDR]
+    lda $2; sta [OAM_DMA]
 
     inc <ball_hist_pointer>
     ldx <ball_hist_pointer>
-    wrb <ball_x>,[ball_hist_x+X]
-    wrb <ball_y>,[ball_hist_y+X]
+    lda <ball_x>; sta [ball_hist_x+X]
+    lda <ball_y>; sta [ball_hist_y+X]
 
     # Ball 1
     # X
@@ -137,38 +145,35 @@ __ball_loop
     sec
     sbc 4
     tax
-    wrb [ball_hist_y+X],[shadow_oam+Y]
+    lda [ball_hist_y+X]; sta [shadow_oam+Y]
     iny
     iny
     iny
-    wrb [ball_hist_x+X],[shadow_oam+Y]
+    lda [ball_hist_x+X]; sta [shadow_oam+Y]
     iny
     bzc (ball_loop)
 __movement
     jsr [controller_read]
     lda $0
-    sta <ball_dx>
-    sta <ball_dy>
-    lda $41
-    cmp <controller_UP>
-    bzc (next1)
-    wrb -2,<ball_dy>
-___next1
-    lda $41
-    cmp <controller_DOWN>
-    bzc (next2)
-    wrb 2,<ball_dy>
-___next2
-    lda $41
-    cmp <controller_LEFT>
-    bzc (next3)
-    wrb -2,<ball_dx>
-___next3
-    lda $41
-    cmp <controller_RIGHT>
-    bzc (next4)
-    wrb 2,<ball_dx>
-___next4
+      sta <ball_dx>
+      sta <ball_dy>
+    ___tUP
+    lda <controller_UP>
+    beq (tDOWN)
+      lda -2; sta <ball_dy>
+    ___tDOWN
+    lda <controller_DOWN>
+    beq (tLEFT)
+      lda 2; sta <ball_dy>
+    ___tLEFT
+    lda <controller_LEFT>
+    beq (tRIGHT)
+      lda -2; sta <ball_dx>
+    ___tRIGHT
+    lda <controller_RIGHT>
+    beq (tDONE)
+      lda 2; sta <ball_dx>
+    ___tDONE
     lda <ball_x>
     clc
     adc <ball_dx>
@@ -185,16 +190,15 @@ ___next4
 # due to nes quirks the button value is either $40 or $41
 _controller_read
     # strobe the controller to read in new values
-    wrb $01,[JOY1]
+    lda $01; sta [JOY1]
     lsr A
     sta [JOY1]
-    # loop 8 times to grab each button
-    ldx 8
-__loop
-    lda [JOY1]
-    dec X
-    sta <controller+X>
-    bzc (loop)
+    # loop 8 times to grab each button (bit 0)
+    ldx 7
+    __loop
+      lda [JOY1]; and 1
+      sta <controller_RIGHT+X>
+    dec X; bpl (loop)
     rts
 
 # Vectors

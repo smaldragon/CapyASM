@@ -7,23 +7,20 @@
     .byte 0
     .byte 0,0,0,0,0,0,0
 
-    .cpu 2a03
+.cpu 2a03
 
-.macro wrb
-    lda {0}
-    sta {1}
-.endmacro
 
     # Zero Page
-    .var ball_x            $0
-    .var ball_y            $1
-    .var ball_dx           $2
-    .var ball_dy           $3
-    .var ball_hist_pointer $4
+    .zp ball_x           
+    .zp ball_y           
+    .zp ball_dx          
+    .zp ball_dy          
+    .zp ball_hist_pointer
     # WRAM
-    .var shadow_oam        $200
-    .var ball_hist_x       $300
-    .var ball_hist_y       $400
+    .org [$200]
+    .var shadow_oam        256
+    .var ball_hist_x       256
+    .var ball_hist_y       256
 
 # Prg ROM
     .org [$8000]
@@ -57,24 +54,36 @@ __clrmem
     inx
     bne (clrmem)
 
-    wrb 2,<ball_dx>
-    wrb 1,<ball_dy>
+    lda 2; sta <ball_dx>
+    lda 1; sta <ball_dy>
 
 __vblankwait2
     bit [PPU_STATUS]
     bpl (vblankwait2)
+    
+    # Fill Nametables with 0 bytes
+    bit [PPU_STATUS]
+    lda $20; sta [PPU_ADDR]
+    lda $00; sta [PPU_ADDR]
+    ldy 2048/256
+    __clr
+      ldx 0
+      ___loop
+        sta [PPU_DATA]
+      inc X; bne (loop)
+    dec Y; bne (clr)
+    
+    # Define Palette Colors
+    lda $3F; sta [PPU_ADDR]   
+    lda $00; sta [PPU_ADDR]
+    lda $15; sta [PPU_DATA]
+    lda $20; sta [PPU_DATA]
 
     # Define Palette Colors
-    wrb $3F,[PPU_ADDR]   
-    wrb $00,[PPU_ADDR]
-    wrb $15,[PPU_DATA]
-    wrb $20,[PPU_DATA]
-
-    # Define Palette Colors
-    wrb $3F,[PPU_ADDR]   
-    wrb $11,[PPU_ADDR]
-    wrb $20,[PPU_DATA]
-    wrb $10,[PPU_DATA]
+    lda $3F; sta [PPU_ADDR]   
+    lda $11; sta [PPU_ADDR]
+    lda $20; sta [PPU_DATA]
+    lda $10; sta [PPU_DATA]
     sta [PPU_DATA]
 
     # Set scroll
@@ -84,9 +93,9 @@ __vblankwait2
 
     # Activate Sprites
     ldx $00
-__sprite_loop
+  __sprite_loop
     inx
-    wrb $1,[shadow_oam+X]
+    lda $1; sta [shadow_oam+X]
     inx
     inx
     inx
@@ -96,14 +105,14 @@ __sprite_loop
     lda %000_11_11_0
     sta [PPU_MASK]
 
-    wrb %1_0_0_0_0_0_00,[PPU_CTRL]
+    lda %1_0_0_0_0_0_00; sta [PPU_CTRL]
 
 __forever
     jmp [forever]
 
 _nmi
-    wrb $0,[OAM_ADDR]
-    wrb $2,[OAM_DMA]     # Begin Sprite DMA
+    lda $0; sta [OAM_ADDR]
+    lda $2; sta [OAM_DMA]     # Begin Sprite DMA
 
 __dx
     lda <ball_dx>
@@ -112,11 +121,11 @@ __dx
     sta <ball_x>
     cmp 0
     bne (next1)
-    wrb 2,<ball_dx>
+    lda 2; sta <ball_dx>
 ___next1
     cmp 250
     bne (next2)
-    wrb -2,<ball_dx>
+    lda -2; sta <ball_dx>
 ___next2
 __dy
     lda <ball_dy>
@@ -125,16 +134,16 @@ __dy
     sta <ball_y>
     cmp 8
     bzc (next1)
-    wrb 1,<ball_dy>
+    lda 1; sta <ball_dy>
 ___next1
     cmp 224
     bzc (next2)
-    wrb -1,<ball_dy>
+    lda -1; sta <ball_dy>
 ___next2
     inc <ball_hist_pointer>
     ldx <ball_hist_pointer>
-    wrb <ball_x>,[ball_hist_x+X]
-    wrb <ball_y>,[ball_hist_y+X]
+    lda <ball_x>; sta [ball_hist_x+X]
+    lda <ball_y>; sta [ball_hist_y+X]
 
     # Ball 1
     # X
@@ -150,11 +159,11 @@ __ball_loop
     sec
     sbc 4
     tax
-    wrb [ball_hist_y+X],[shadow_oam+Y]
+    lda [ball_hist_y+X]; sta [shadow_oam+Y]
     iny
     iny
     iny
-    wrb [ball_hist_x+X],[shadow_oam+Y]
+    lda [ball_hist_x+X]; sta [shadow_oam+Y]
     iny
     bzc (ball_loop)
     rti

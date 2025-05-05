@@ -9,10 +9,7 @@
 
     .cpu 2a03
 
-.macro wrb
-    lda {0}
-    sta {1}
-.endmacro
+
 
 # Prg ROM
     .org [$8000]
@@ -35,44 +32,58 @@ __vblankwait1
     bpl (vblankwait1)
 
 __clrmem
+    lda 0
     sta <$0000+X>
     sta [$0100+X]
-    sta [$0200+X]
     sta [$0300+X]
     sta [$0400+X]
     sta [$0500+X]
     sta [$0600+X]
     sta [$0700+X]
+    lda $FF
+    sta [$0200+X]
     inx
     bne (clrmem)
 
 __vblankwait2
     bit [PPU_STATUS]
     bpl (vblankwait2)
+    
+    # Fill Nametables with 0 bytes
+    bit [PPU_STATUS]
+    lda $20; sta [PPU_ADDR]
+    lda $00; sta [PPU_ADDR]
+    ldy 2048/256
+    __clr
+      ldx 0
+      ___loop
+        sta [PPU_DATA]
+      inc X; bne (loop)
+    dec Y; bne (clr)
 
     # Define Palette Colors
-    wrb $3F,[PPU_ADDR]   
-    wrb $00,[PPU_ADDR]
-    wrb $15,[PPU_DATA]
-    wrb $20,[PPU_DATA]
+    lda $3F; sta [PPU_ADDR]   
+    lda $00; sta [PPU_ADDR]
+    lda $15; sta [PPU_DATA]
+    lda $20; sta [PPU_DATA]
     
     # Define Cursor Position
-    wrb $21,[PPU_ADDR]
-    wrb $AA,[PPU_ADDR]
+    lda $21; sta [PPU_ADDR]
+    lda $AA; sta [PPU_ADDR]
     
     # Write text
-    wrb 1,[PPU_DATA] # H
-    wrb 2,[PPU_DATA] # E
-    wrb 3,[PPU_DATA] # L
-    sta   [PPU_DATA] # L
-    wrb 4,[PPU_DATA] # O
-    wrb 0,[PPU_DATA] # ' '
-    wrb 5,[PPU_DATA] # W
-    wrb 4,[PPU_DATA] # O
-    wrb 6,[PPU_DATA] # R
-    wrb 3,[PPU_DATA] # L
-    wrb 7,[PPU_DATA] # D
-    wrb 8,[PPU_DATA] # heart
+    lda 1; sta [PPU_DATA] # H
+    lda 2; sta [PPU_DATA] # E
+    lda 3; sta [PPU_DATA] # L
+           sta [PPU_DATA] # L
+    lda 4; sta [PPU_DATA] # O
+    lda 0; sta [PPU_DATA] # ' '
+    lda 5;sta [PPU_DATA] # W
+    lda 4;sta [PPU_DATA] # O
+    lda 6;sta [PPU_DATA] # R
+    lda 3;sta [PPU_DATA] # L
+    lda 7;sta [PPU_DATA] # D
+    lda 8;sta [PPU_DATA] # heart
 
     # Set scroll
     lda $00
@@ -82,13 +93,19 @@ __vblankwait2
     # Activate Background
     lda %000_11_11_0
     sta [PPU_MASK]
+    lda %100_010_00
+    sta [PPU_CTRL]
 
 __forever
     jmp [forever]
 
+__nmi
+  lda 2; sta [OAM_DMA]
+rti
+
 # Vectors
     .pad [$FFFA]
-    .word reset
+    .word nmi
     .word reset
     .word reset
 
