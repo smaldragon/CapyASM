@@ -55,10 +55,10 @@ In CapyASM the type of addressing to be used is always written explicitly, avoid
 * `.asm "file.asm"`     - Inserts an assembly file
 * `.org [$xx]`          - Sets the Program Counter
 * `.pad $xx|pad $[xx]`  - Adds zeros to the file, either a set amount or until a certain PC is reached
-* `.padpage <value>`    - Pads to align with the start of a 256 byte page
+* `.padpage <value>`    - Pads with a value to align with the start of a 256 byte page
 * `.val NAME $xx`       - Define a constant value
 * `.var NAME SIZE`      - Define a memory variable of set byte length
-* `.zp  NAME SIZE`      - Define a zero page variable.
+* `.zp  NAME SIZE`      - Define a zero page variable of set byte length
 * `.macro name $xx,$xx` - Define Macro
 * `.cpu 6502`           - Set the CPU to use
 * `# Comment`

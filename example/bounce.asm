@@ -22,6 +22,11 @@
     .var ball_hist_x       256
     .var ball_hist_y       256
 
+.macro wrb
+  lda {0}
+  sta {1}
+.endmacro
+
 # Prg ROM
     .org [$8000]
 _reset

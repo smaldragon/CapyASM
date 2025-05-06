@@ -126,7 +126,7 @@ class Interpreter:
                 logging.debug(f"TOKENS: {tokens}")
                 symbols = self.getSymbols(tokens)
                 logging.debug(f"SYMBOLS {symbols}")
-                lineout = (self.getCompile(symbols),self.cur_label.copy(),self.cur_line)
+                lineout = (self.getCompile(symbols,tokens),self.cur_label.copy(),self.cur_line)
                 logging.debug(f"OUT {lineout}")
                 pass_1.append(lineout)
 
@@ -262,6 +262,7 @@ class Interpreter:
     def getTokens(self,line):
         cur_token = ""
         tokens = []
+        metatokens = []
         string = None
 
         next_line = ""
@@ -291,8 +292,12 @@ class Interpreter:
                 elif c == ";":
                     next_line = line[i+1:]
                     break
-                elif c == ":" or c == "," or c == " ":
+                elif c == ":" or c == " ":
                     cur_token,tokens=append_token(cur_token,tokens)
+                elif c == ",":
+                    cur_token,tokens=append_token(cur_token,tokens)
+                    metatokens.append(tokens)
+                    tokens = []
                 elif c in ('"',"'"):
                     cur_token,tokens=append_token(cur_token,tokens)
                     cur_token += c
@@ -308,10 +313,13 @@ class Interpreter:
                     cur_token += c
         
         cur_token,tokens=append_token(cur_token,tokens)
-        
-        return tokens, next_line
+        metatokens.append(tokens)
+        return metatokens, next_line
     # Step 2 - Take tokens and return calculated symbols with variables and compile-time math
-    def getSymbols(self,tokens):
+    def getSymbols(self,metatokens):
+        tokens = []
+        for i,meta in enumerate(metatokens):
+          tokens.extend(meta)
         symbols = []
         cur_symbol :List[List] = []
         prev_token = True
@@ -344,7 +352,7 @@ class Interpreter:
 
         return symbols
     # Step 3 - Compile a symbol array (1st pass)
-    def getCompile(self,symbols):
+    def getCompile(self,symbols,tokens):
         logging.debug(symbols)
         output = []
         cur_pc = self.pc
@@ -521,9 +529,14 @@ class Interpreter:
             elif opcode in self.macros:
                 #macro_line = self.lines[self.cur_line].strip().split(" ")
                 values = []
-                for i,s in enumerate(symbols):
-                    if i > 0:
-                        values.extend(s)
+                for i,t in enumerate(tokens):
+                    l = []
+                    for token in t:
+                      if token != opcode:
+                        l.extend(token)
+                    values.append("".join(l))
+                    #if i > 0:
+                    #    values.extend(s)
                 try:
                     self.lines = self.lines[:self.cur_line+1] + self.macros[opcode].format(*(values)).split("\n") + self.lines[self.cur_line+1:]
                 except Exception as e:
