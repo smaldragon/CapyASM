@@ -39,6 +39,7 @@ macro+="""
 
     .val OAM_DMA     $4014
     .val SND_CHN     $4015
+    .val APU_STATUS  $4015
     .val JOY1        $4016
     .val JOY2        $4017
     .val APU_FRAME   $4017

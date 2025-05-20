@@ -466,10 +466,19 @@ class Interpreter:
                     for s in symbols[1:]:
                         output.extend([("&low",s),("&high",s)])
                 if opcode == ".asm":
-                    filename = f"{self.folder+symbols[1][0][0:]}.asm"
-                    with open(filename) as f:
+                    #filename = f"{self.folder+symbols[1][0][0:]}.asm"
+                    #with open(filename) as f:
+                    #    self.lines = self.lines[:self.cur_line+1] + f.read().split("\n") + self.lines[self.cur_line+1:]
+                    #    logging.info(f"Inserted assembly file \"{filename}\"")
+                    name = symbols[1][0][0:].strip('" ')
+                    if len(name.split(".")) == 1:
+                        filename = f"{self.folder+name}.asm"
+                    else:
+                        filename = f"{self.folder+name}"
+                    with open(filename,"r") as f:
                         self.lines = self.lines[:self.cur_line+1] + f.read().split("\n") + self.lines[self.cur_line+1:]
                         logging.info(f"Inserted assembly file \"{filename}\"")
+                    
                 if opcode == ".bin":
                     name = symbols[1][0][0:].strip('" ')
                     if len(name.split(".")) == 1:
