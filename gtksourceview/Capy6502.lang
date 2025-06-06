@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  
+ Author: Adam DiFrischia <adam820@gmail.com>
+ Copyright (C) 2014 Adam DiFrischia
+
+ This library is free software; you can redistribute it and/or
+ modify it under the terms of the GNU Library General Public
+ License as published by the Free Software Foundation; either
+ version 2 of the License, or (at your option) any later version.
+
+ This library is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ Library General Public License for more details.
+
+ You should have received a copy of the GNU Library General Public
+ License along with this library; if not, write to the
+ Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+ Boston, MA 02111-1307, USA.
+
+-->
+<language id="6502asm" _name="6502 Assembly" version="2.0" _section="Sources" >
+
+  <metadata>
+    <!-- <property name="mimetypes" ></property> -->
+    <property name="globs" >*.asm;*.6502</property>
+  </metadata>
+
+  <styles>
+    <style id="preprocessor"    _name="Preprocessors"        map-to="def:preprocessor"/>
+    <style id="opcode"          _name="Opcodes"             map-to="def:keyword"/>
+    <style id="comment"         _name="Comment"             map-to="def:comment"/>
+    <style id="statement"       _name="Statement"           map-to="def:identifier"/>
+    <style id="builtin"         _name="Built-in identifier" map-to="def:identifier"/>
+    <style id="hex-group"       _name="Hex Groups"          map-to="def:number"/>
+    <style id="datatype"        _name="Datatype"            map-to="def:type"/>
+    <style id="operator"        _name="Operator"            map-to="def:operator"/>
+  </styles>
+
+  <default-regex-options case-sensitive="false" />
+
+  <definitions>
+    <context id="6502asm">
+      <include>
+            <context id="opcodes" style-ref="opcode" >
+                <keyword>ADC</keyword>
+                <keyword>AND</keyword>
+                <keyword>ASL</keyword>
+                <keyword>BCC</keyword>
+                <keyword>BCS</keyword>
+                <keyword>BEQ</keyword>
+                <keyword>BIT</keyword>
+                <keyword>BMI</keyword>
+                <keyword>BNE</keyword>
+                <keyword>BPL</keyword>
+                <keyword>BRK</keyword>
+                <keyword>BVC</keyword>
+                <keyword>BVS</keyword>
+                <keyword>CLC</keyword>
+                <keyword>CLD</keyword>
+                <keyword>CLI</keyword>
+                <keyword>CLV</keyword>
+                
+                <keyword>BZC</keyword>
+                <keyword>BZS</keyword>
+                <keyword>BNC</keyword>
+                <keyword>BNS</keyword>
+                
+                <keyword>BRA</keyword>
+                
+                <keyword>CMP</keyword>
+                <keyword>CPX</keyword>
+                <keyword>CPY</keyword>
+                <keyword>DEC</keyword>
+                <keyword>DEX</keyword>
+                <keyword>DEY</keyword>
+                <keyword>EOR</keyword>
+                <keyword>XOR</keyword>
+                <keyword>INC</keyword>
+                <keyword>INX</keyword>
+                <keyword>INY</keyword>
+                <keyword>JMP</keyword>
+                <keyword>JSR</keyword>
+                <keyword>LDA</keyword>
+                <keyword>LDX</keyword>
+                <keyword>LDY</keyword>
+                <keyword>LSR</keyword>
+                <keyword>NOP</keyword>
+                <keyword>ORA</keyword>
+                <keyword>PHA</keyword>
+                <keyword>PHX</keyword>
+                <keyword>PHY</keyword>
+                <keyword>PHP</keyword>
+                <keyword>PSH</keyword>
+                <keyword>PLA</keyword>
+                <keyword>PLX</keyword>
+                <keyword>PLY</keyword>
+                <keyword>PLP</keyword>
+                <keyword>PUL</keyword>
+                <keyword>ROL</keyword>
+                <keyword>ROR</keyword>
+                <keyword>RTI</keyword>
+                <keyword>SBC</keyword>
+                <keyword>SEC</keyword>
+                <keyword>SEC</keyword>
+                <keyword>SEI</keyword>
+                <keyword>STA</keyword>
+                <keyword>STX</keyword>
+                <keyword>STY</keyword>
+                <keyword>STZ</keyword>
+                <keyword>TAX</keyword>
+                <keyword>TAY</keyword>
+                <keyword>TSX</keyword>
+                <keyword>TXA</keyword>
+                <keyword>TXS</keyword>
+                <keyword>TYA</keyword>
+                <keyword>RTS</keyword>
+
+            </context>
+
+            <context id="operator" style-ref="datatype">
+                <match>\s(\+*)(\-*)</match>
+            </context>
+
+            <context id="preprocessor" style-ref="preprocessor">
+                <prefix>(\.)</prefix>
+                <keyword>include</keyword>
+                <keyword>require</keyword>
+            </context>
+
+
+
+            <context id="data-types" style-ref="datatype">
+                <prefix>(\.)</prefix>
+                <keyword>data</keyword>
+                <keyword>text</keyword>
+                <keyword>word</keyword>
+                <keyword>byte</keyword>
+                <keyword>alias</keyword>
+                <keyword>org</keyword>
+                <keyword>pad</keyword>
+                <keyword>var</keyword>
+                <keyword>val</keyword>
+                <keyword>cpu</keyword>
+                <keyword>asm</keyword>
+                <keyword>bin</keyword>
+                <keyword>macro</keyword>
+                <keyword>endmacro</keyword>
+            </context>
+
+            <context id="comment" style-ref="comment">
+                <start>#</start>
+                <end>$</end>
+            </context>
+
+            <context id="line-number" style-ref="comment">
+                <match>^(([L][\da-fA-F]*(\.|:))|[\d]*(\.|:))[*]?\s</match>
+            </context>
+
+            <context id="zeropage-xy" style-ref="hex-group">
+                <match>(\$[\da-fA-F]{2})(\,[xXyY])?\s</match>
+            </context>
+
+            <context id="absolute-address-xy" style-ref="hex-group">
+                <match>(\$[\da-fA-F]{4})(\,[xXyY])?</match>
+            </context>
+
+            <context id="hexadecimal-number" style-ref="hex-group">
+                <match>(\()?(\$[\da-fA-F]{2})(\))?(\,[xXyY])?</match>
+            </context>
+
+	    <context id="hexadecimal-number2" style-ref="preprocessor">
+                <match>(\#\$[\da-fA-F]{2})</match>
+            </context>
+
+	    <context id="binary-number" style-ref="datatype">
+                <match>(\#\%)([\d]{8})</match>
+            </context>
+
+            <context id="alias-reference" style-ref="datatype">
+                <match>(_)(\w+)(\,[xXyY])?</match>
+            </context>
+
+	    <context id="alias-name" style-ref="statement">
+ 		<match>(\w+)(\,[xXyY])?</match>
+	    </context>
+
+        </include>
+        </context>
+      </definitions>
+</language>
