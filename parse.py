@@ -9,8 +9,11 @@ ASM_OPS = [
     ".zvar",
     ".zp",
     ".val",
+    ".local",
+    ".localorg",
     ".org",
     ".zorg",
+    ".zporg",
     ".pad",
     ".byte",
     ".word",
@@ -69,6 +72,9 @@ class Interpreter:
         self.cur_line = 0
         self.out = []
         self.variables = {}
+        self.local_variables = {}
+        self.local_variables_pc = 0
+        self.local_variables_lastpc = []
         self.macros    = {}
         self.cur_label = []
         self.labels    = {}
@@ -95,105 +101,7 @@ class Interpreter:
     #    logging.info(colorama.Fore.YELLOW + "LOG:" + message + colorama.Fore.RESET )
     #def error(self,message):
     #    logging.error(colorama.Back.RED + "ERROR:" + message + colorama.Back.RESET)
-    def run(self,out_f):
-        
-        pass_1 = self.first_pass()
-        if not self.success:
-            logging.error("Failed on 1st Pass")
-            return
-            
-        pass_2 = self.second_pass(pass_1)
-        if not self.success:
-            logging.error("Failed on 2nd Pass")
-            return
-        
-        self.third_pass(pass_2,out_f)
-        if not self.success:
-            logging.error("Failed on 3rd Pass")
-            return
-
-        logging.info("Done!")
-        
-    def first_pass(self):
-        # Pass 1 - Go line by line and execute it
-        logging.info("PASS 1 - General Pass...")
-        pass_1 = []
-        while self.cur_line < len(self.lines):
-            if self.in_macro is None:
-                logging.debug("\n")
-                logging.debug("LINE:"+self.lines[self.cur_line].strip())
-                tokens,next_line  = self.getTokens(self.lines[self.cur_line].strip(' \t\n'))
-                logging.debug(f"TOKENS: {tokens}")
-                symbols = self.getSymbols(tokens)
-                logging.debug(f"SYMBOLS {symbols}")
-                lineout = (self.getCompile(symbols,tokens),self.cur_label.copy(),self.cur_line)
-                logging.debug(f"OUT {lineout}")
-                pass_1.append(lineout)
-
-                if next_line:
-                    self.lines.insert(self.cur_line+1,next_line)
-            else:
-                if self.lines[self.cur_line].strip() == ".endmacro":
-                    self.macros[self.in_macro] = self.cur_macro
-                    self.cur_macro = ""
-                    self.in_macro = None
-                else:
-                    self.cur_macro+=self.lines[self.cur_line] + "\n"
-                
-            self.cur_line += 1
-        logging.debug(pass_1)
-        
-        return pass_1
-        
-    def second_pass(self,pass_1):
-                #logging.debug(f"BINARY: {pass_1}")
-        # Pass 2 - Calculate math, labels and relatives
-        logging.info("PASS 2 - Inserting Labels and Relatives...")
-        pass_2 = []
-        logging.debug(self.labels)
-
-        for _,p in enumerate(pass_1):
-            if p[0]:
-                cur_int = []
-                self.cur_label = p[1]
-                for d in p[0][0]:
-                    if d[0] == "&code":
-                        cur_int.append(d[1])
-                    elif d[0] == "&byte":
-                        cur_int.append(self.processExpression(d[1]))
-                    elif d[0] == "&low":
-                        cur_int.append(self.processExpression(d[1])&255)
-                    elif d[0] == "&high":
-                        cur_int.append((self.processExpression(d[1])>>8)&255)
-                    elif d[0] == "&rel":
-                        v = self.processExpression(d[1])-(p[0][1]+len(cur_int)+1)
-                        logging.debug(f"offset is {v}")
-                        if v > 127 or v < -128:
-                            self.error(f"Out of Range Branch {v}",p[2])
-                        cur_int.append(v)
-                    elif d[0] == "&bytes":
-                        cur_int.extend(d[1])
-                pass_2.extend(cur_int)
-        return pass_2
-    def third_pass(self, pass_2, out_f):
-        #logging.debug(f"BINARY: {pass_2}")
-        # Pass 3 - Output to binary file                
-        logging.info("PASS 3 - File Output...")
-        
-        out_bytes = []
-        for b in pass_2:
-            if b < 0:
-                b=256+b
-            if b < 0 or b > 255:
-                self.error("INVALID BYTE")
-            out_bytes.append(b)
-            
-        if len(self.errors) == 0:
-            for b in out_bytes:
-                out_f.write(bytearray([b]))
-                
-        return
-                    
+    
     def processExpression(self,expr):
         def parse_value(value):
             logging.debug("parsing "+str(expr))
@@ -239,7 +147,21 @@ class Interpreter:
                         break
                     t.pop()
                     #value = [token,self.labels[token]]
-                if not is_label:
+                #if is_label:
+                #    continue
+                
+                is_local = False
+                t = self.cur_label.copy()
+                while len(t) > 0:
+                    w = "".join(t)+":"+token
+                    logging.debug(w)
+                    if w in self.local_variables:
+                        value = [token,self.local_variables[w]]
+                        is_local = True
+                        break
+                    t.pop()
+                
+                if not is_label and not is_local:
                     value = parse_value(token)
 
                     if not value:
@@ -257,7 +179,57 @@ class Interpreter:
                 symbols.append(value)
         logging.debug(symbols)
         return symbols[0][1]
+    
+    def run(self,out_f):
         
+        pass_1 = self.first_pass()
+        if not self.success:
+            logging.error("Failed on 1st Pass")
+            return
+            
+        pass_2 = self.second_pass(pass_1)
+        if not self.success:
+            logging.error("Failed on 2nd Pass")
+            return
+        
+        self.third_pass(pass_2,out_f)
+        if not self.success:
+            logging.error("Failed on 3rd Pass")
+            return
+
+        logging.info("Done!")
+    # ==============================================
+    # FIRST PASS - Go line by line and Parse Assembly
+    # ==============================================
+    def first_pass(self):
+        logging.info("PASS 1 - General Pass...")
+        pass_1 = []
+        while self.cur_line < len(self.lines):
+            if self.in_macro is None:
+                logging.debug("\n")
+                logging.debug("LINE:"+self.lines[self.cur_line].strip())
+                tokens,next_line  = self.getTokens(self.lines[self.cur_line].strip(' \t\n'))
+                logging.debug(f"TOKENS: {tokens}")
+                symbols = self.getSymbols(tokens)
+                logging.debug(f"SYMBOLS {symbols}")
+                lineout = (self.getCompile(symbols,tokens),self.cur_label.copy(),self.cur_line)
+                logging.debug(f"OUT {lineout}")
+                pass_1.append(lineout)
+
+                if next_line:
+                    self.lines.insert(self.cur_line+1,next_line)
+            else:
+                if self.lines[self.cur_line].strip() == ".endmacro":
+                    self.macros[self.in_macro] = self.cur_macro
+                    self.cur_macro = ""
+                    self.in_macro = None
+                else:
+                    self.cur_macro+=self.lines[self.cur_line] + "\n"
+                
+            self.cur_line += 1
+        logging.debug(pass_1)
+        
+        return pass_1
     # Step 1 - Parse a line of code and return tokens
     def getTokens(self,line):
         cur_token = ""
@@ -369,8 +341,15 @@ class Interpreter:
                 if ident > len(self.cur_label):
                     self.cur_label.extend(['']*(ident-len(self.cur_label)-1))
                     self.cur_label.append(opcode[1:])
+                    self.local_variables_lastpc.extend( [self.local_variables_pc]*(ident-len(self.cur_label)-1))
                 else:
+                    if ident == len(self.cur_label):
+                        self.local_variables_lastpc.append(self.local_variables_pc)
+                    else:
+                        self.local_variables_lastpc = self.local_variables_lastpc[:ident+1]
+                        self.local_variables_pc = self.local_variables_lastpc[-1]
                     self.cur_label = self.cur_label[:ident] + [opcode[1:]]
+                
                 key = "".join(self.cur_label)
                 if key in self.labels:
                     self.labels[key] += [self.pc]
@@ -407,6 +386,8 @@ class Interpreter:
                     except:
                         self.error("Unable to process variable")
                         sys.exit(2)
+                if opcode == ".org":
+                    self.pc = self.processExpression(symbols[2])
                 # 6502 Zero Page Variables
                 if opcode in (".zvar",".zp"):
                     try:
@@ -421,11 +402,23 @@ class Interpreter:
                     except:
                         self.error("Unable to process variable")
                         sys.exit(2)
-                
-                if opcode == ".org":
-                    self.pc = self.processExpression(symbols[2])
-                if opcode == ".zorg":
+                if opcode in (".zorg",".zporg"):
                     self.zpc = self.processExpression(symbols[2])
+                # Local Variables
+                if opcode == ".local":
+                    key = "".join(self.cur_label)+':'+symbols[1][0]
+                    try:
+                        mvar_size = 1
+                        if len(symbols) > 2:
+                            mvar_size = self.processExpression(symbols[2])
+                        
+                        self.local_variables[key] = self.local_variables_pc
+                        self.local_variables_pc += mvar_size
+                    except:
+                        self.error("Unable to process variable")
+                        sys.exit(2)
+                if opcode == ".localorg":
+                    self.local_variables_pc = self.processExpression(symbols[2])
                 if opcode == ".block":
                     self.lastpc.append(self.pc)
                     self.pc = self.processExpression(symbols[2])
@@ -558,3 +551,58 @@ class Interpreter:
             else:
                 self.pc += 1
         return (output,cur_pc)
+    # ==============================================
+    # SECOND PASS - Calculate math, labels and relatives
+    # ==============================================
+    def second_pass(self,pass_1):
+        logging.info("PASS 2 - Inserting Labels and Relatives...")
+        pass_2 = []
+        
+        logging.debug(self.labels)
+        logging.debug(self.variables)
+        logging.debug(self.local_variables)
+
+        for _,p in enumerate(pass_1):
+            if p[0]:
+                cur_int = []
+                self.cur_label = p[1]
+                for d in p[0][0]:
+                    if d[0] == "&code":
+                        cur_int.append(d[1])
+                    elif d[0] == "&byte":
+                        cur_int.append(self.processExpression(d[1]))
+                    elif d[0] == "&low":
+                        cur_int.append(self.processExpression(d[1])&255)
+                    elif d[0] == "&high":
+                        cur_int.append((self.processExpression(d[1])>>8)&255)
+                    elif d[0] == "&rel":
+                        v = self.processExpression(d[1])-(p[0][1]+len(cur_int)+1)
+                        logging.debug(f"offset is {v}")
+                        if v > 127 or v < -128:
+                            self.error(f"Out of Range Branch {v}",p[2])
+                        cur_int.append(v)
+                    elif d[0] == "&bytes":
+                        cur_int.extend(d[1])
+                pass_2.extend(cur_int)
+        return pass_2
+    # ==============================================
+    # THIRD PASS - Output to binary file
+    # ==============================================
+    def third_pass(self, pass_2, out_f):
+        logging.info("PASS 3 - File Output...")
+        
+        out_bytes = []
+        for b in pass_2:
+            if b < 0:
+                b=256+b
+            if b < 0 or b > 255:
+                self.error("INVALID BYTE")
+            out_bytes.append(b)
+            
+        if len(self.errors) == 0:
+            for b in out_bytes:
+                out_f.write(bytearray([b]))
+                
+        return
+        
+

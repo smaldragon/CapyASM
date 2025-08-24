@@ -160,6 +160,7 @@ ___next2
 
     ldy $4
 __ball_loop
+    
     txa
     sec
     sbc 4
@@ -172,7 +173,6 @@ __ball_loop
     iny
     bzc (ball_loop)
     rti
-
 # Vectors
     .pad [VECTORS]
     .word nmi

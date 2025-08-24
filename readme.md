@@ -59,6 +59,9 @@ In CapyASM the type of addressing to be used is always written explicitly, avoid
 * `.val NAME $xx`       - Define a constant value
 * `.var NAME SIZE`      - Define a memory variable of set byte length
 * `.zp  NAME SIZE`      - Define a zero page variable of set byte length
+* `.zporg [$xx]`        - Sets .zp Program Counter
+* `.local NAME SIZE`    - Define a local variable for the current label
+* `.localorg [$xx]`     - Sets .local Program Counter
 * `.macro name $xx,$xx` - Define Macro
 * `.cpu 6502`           - Set the CPU to use
 * `# Comment`
