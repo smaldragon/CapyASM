@@ -10,6 +10,7 @@ ASM_OPS = [
     ".zp",
     ".val",
     ".local",
+    ".localval",
     ".localorg",
     ".org",
     ".zorg",
@@ -415,7 +416,15 @@ class Interpreter:
                         self.local_variables[key] = self.local_variables_pc
                         self.local_variables_pc += mvar_size
                     except:
-                        self.error("Unable to process variable")
+                        self.error(f"Unable to process local variable: {symbols}")
+                        sys.exit(2)
+                if opcode == ".localval":
+                    key = "".join(self.cur_label)+':'+symbols[1][0]
+                    try:
+                        value = self.processExpression(symbols[2])
+                        self.local_variables[key] = value
+                    except:
+                        self.error(f"Unable to process local value: {symbols}")
                         sys.exit(2)
                 if opcode == ".localorg":
                     self.local_variables_pc = self.processExpression(symbols[2])
