@@ -7,7 +7,7 @@ from . import huc6280
 from . import rp2a03
 from . import mos6510
 from . import kitty
-
+from . import subleq8
 def get(cpu):
     config = None
     if cpu.lower() in ("rc2a03","rc2a07","2a03","2a07"):
@@ -24,6 +24,8 @@ def get(cpu):
         config = huc6280
     elif cpu.lower() == "kitty":
         config = kitty
+    elif cpu.lower() == "subleq8":
+        config = subleq8
     
     if config:
         return config.macro, config.opcodes, config.registers, config.extension, config.addr_tokens
@@ -70,6 +72,8 @@ addr = {
     f"(?i)\[#\[{value}\]\]$":"[a]",
     f"(?i)\[#<{value}>\]$":"[d]",
     f"(?i)\[#<{value}>\+y\]$":"[d]+y",
+    
+    f"(?i){value}:{value}:{value}":"###",
 }
 
 modes = {
@@ -92,6 +96,9 @@ modes = {
     "[#<i>]":"(z)",
     "[<i>+Y]":"(z)+y",
     "[#<i>+Y]":"(z)+y",
+    
+    "iii":"###",
+    "ii":"##",
     
     # Registers
     "A":"A",

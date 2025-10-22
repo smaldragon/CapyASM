@@ -49,50 +49,63 @@ opcodes = {
         "a":    [0x2C,"al","ah"],
         "z":    [0x24,"z"],
     },
+    
+    # BCC + ALIAS
     "bcc":{
         "r":    [0x90,"r"],
         "#":    [0x90,"i"]
-    },
-    "bcs":{
+    }, "blt":{
         "r":    [0xB0,"r"],
         "#":    [0xB0,"i"]
     },
+    
+    # BCS + ALIAS
+    "bcs":{
+        "r":    [0xB0,"r"],
+        "#":    [0xB0,"i"]
+    }, "bge":{
+        "r":    [0xB0,"r"],
+        "#":    [0xB0,"i"]
+    },
+    
+    # BNE + ALIAS
     "bne":{
         "r":    [0xD0,"r"],
         "#":    [0xD0,"i"]
     },
-    # BNE ALIAS
     "bzc":{
         "r":    [0xD0,"r"],
         "#":    [0xD0,"i"]
     },
+    
+    # BEQ + ALIAS
     "beq":{
         "r":    [0xF0,"r"],
         "#":    [0xF0,"i"]
-    },
-    # BEQ ALIAS
-    "bzs":{
+    }, "bzs":{
         "r":    [0xF0,"r"],
         "#":    [0xF0,"i"]
     },
+    
+    # BPL + ALIAS
     "bpl":{
         "r":    [0x10,"r"],
         "#":    [0x10,"i"]
-    },
-    # BPL ALIAS
-    "bmc":{
+    }, "bmc":{
         "r":    [0x10,"r"],
         "#":    [0x10,"i"]
     },
+    
+    # BMI + ALIAS
     "bmi":{
         "r":    [0x30,"r"],
         "#":    [0x30,"i"]
-    },
-    # BMI ALIAS
-    "bms":{
+    }, "bms":{
         "r":    [0x30,"r"],
         "#":    [0x30,"i"]
     },
+    
+    
     "bvc":{
         "r":    [0x50,"r"],
         "#":    [0x50,"i"]

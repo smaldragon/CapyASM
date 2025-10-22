@@ -530,6 +530,9 @@ class Interpreter:
                             elif code == "ah":
                                 output.append(("&high",param[param_i]))
                                 param_i += 1
+                            elif code == "NEXT":
+                                output.append(("&next",0))
+                                param_i += 1
                     else:
                         self.error(f"Opcode {opcode} does not support Addressing Mode {addr}")
                 else:
@@ -592,6 +595,9 @@ class Interpreter:
                         cur_int.append(v)
                     elif d[0] == "&bytes":
                         cur_int.extend(d[1])
+                    elif d[0] == "&next":
+                        #...
+                        cur_int.append(p[0][1]+len(cur_int)+1)
                 pass_2.extend(cur_int)
         return pass_2
     # ==============================================
