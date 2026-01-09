@@ -47,11 +47,17 @@ def main(args):
 
         if valid_args and inter:
             output = args.output
+            debugfile = args.debugfile
             
             try:
-                with open(".temp","wb") as f:
-                    inter.run(f)
-                    
+                f = open(".temp","wb")
+                fd = None
+                if debugfile:
+                  fd = open(".tempd","w")
+                #with open(".temp","wb") as f:
+                inter.run(f,fd)
+                f.close()
+                
                 if inter.warnings:
                     logging.info(f"{len(inter.errors)} warnings")
                     for warning in inter.warnings:
@@ -70,8 +76,10 @@ def main(args):
                 else:
                     if not output:
                         output = os.path.splitext(args.input)[0] + inter.extension
-
                     os.rename(".temp",output)
+                    
+                    if debugfile:
+                        os.rename(".tempd",debugfile)
 
             except Exception as e:
                 print(e)
@@ -88,6 +96,7 @@ if __name__ == "__main__":
     parser.add_argument("-i","--input", help="The file to assemble", action = "store")
     parser.add_argument("-o","--output", help="The output file", action = "store")
     parser.add_argument("-d","--debug", help = "Debug output", action = "store_true")
+    parser.add_argument("-D","--debugfile", help = "The debug output file", action = "store")
     parser.add_argument("--docs", help = "Print Documentation", action = "store_true")
     
     main(parser.parse_args())

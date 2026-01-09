@@ -72,10 +72,15 @@ class Interpreter:
         
         self.cur_line = 0
         self.out = []
+        
         self.variables = {}
+        
         self.local_variables = {}
         self.local_variables_pc = 0
         self.local_variables_lastpc = []
+        
+        self.values = {}
+        
         self.macros    = {}
         self.cur_label = []
         self.labels    = {}
@@ -129,7 +134,9 @@ class Interpreter:
         value = None
         
         for i,token in enumerate(expr):
-            if token in self.variables:
+            if token in self.values:
+                value = [token,self.values[token]]
+            elif token in self.variables:
                 value = [token,self.variables[token]]
             elif token in self.labels:
                 value = [token,self.labels[token][0]]
@@ -181,7 +188,7 @@ class Interpreter:
         logging.debug(symbols)
         return symbols[0][1]
     
-    def run(self,out_f):
+    def run(self,out_f,out_d=None):
         
         pass_1 = self.first_pass()
         if not self.success:
@@ -197,6 +204,9 @@ class Interpreter:
         if not self.success:
             logging.error("Failed on 3rd Pass")
             return
+            
+        if out_d:
+          self.debug_pass(pass_1,pass_2,out_d)
 
         logging.info("Done!")
     # ==============================================
@@ -371,16 +381,22 @@ class Interpreter:
                     self.lines = self.lines[:self.cur_line+1] + cpu_macro.split("\n") + self.lines[self.cur_line+1:]
                 if opcode == ".val":
                     try:
+                        if symbols[1][0] in self.variables:
+                          self.warning(f'Variable/Value conflict "{symbols[1][0]}"')
+                        
                         value = self.processExpression(symbols[2])
-                        self.variables[symbols[1][0]] = value
+                        self.values[symbols[1][0]] = value
                     except:
-                        self.error("Unable to process variable")
+                        self.error("Unable to process value")
                         sys.exit(2)
                 if opcode == ".var":
                     try:
                         mvar_size = 1
                         if len(symbols) > 2:
                             mvar_size = self.processExpression(symbols[2])
+                        
+                        if symbols[1][0] in self.values:
+                          self.warning(f'Variable/Value conflict "{symbols[1][0]}"')
                         
                         self.variables[symbols[1][0]] = self.pc
                         self.pc += mvar_size
@@ -395,6 +411,9 @@ class Interpreter:
                         mvar_size = 1
                         if len(symbols) > 2:
                             mvar_size = self.processExpression(symbols[2])
+                            
+                        if symbols[1][0] in self.values:
+                          self.warning(f'Variable/Value conflict "{symbols[1][0]}"')
                         
                         self.variables[symbols[1][0]] = self.zpc
                         self.zpc += mvar_size
@@ -618,6 +637,15 @@ class Interpreter:
             for b in out_bytes:
                 out_f.write(bytearray([b]))
                 
+                
         return
+    def debug_pass(self, pass_1, pass_2, out_d):
+        logging.info("PASS 4 - Creating Debug File...")
         
+        out_d.write("labels = " + str(self.labels) + "\n")
+        out_d.write("values = " + str(self.values) + "\n")
+        out_d.write("variables = " + str(self.variables) + "\n")
+        out_d.write("local_variables = " + str(self.local_variables) + "\n")
+        
+        return
 
