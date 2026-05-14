@@ -2,7 +2,7 @@ import logging
 
 from . import mos6502
 from . import wdc65c02
-from . import wdc65816
+from . import wdc65c816
 from . import huc6280
 from . import rp2a03
 from . import mos6510
@@ -18,8 +18,8 @@ def get(cpu):
         config = mos6510
     elif cpu.lower() in ("wdc65c02","65c02"):
         config = wdc65c02
-    #elif cpu.lower() in ("wdc65816","65816"):
-    #    return wdc65816.macro,wdc65816.opcodes
+    elif cpu.lower() in ("wdc65816","65816","wdc65c816","65c816"):
+        config = wdc65c816
     elif cpu.lower() in ("huc6280","c6280","6280","pc-engine","pce","turbografx-16"):
         config = huc6280
     elif cpu.lower() == "kitty":
@@ -51,8 +51,10 @@ addr = {
     f"(?i)\[<{value}\+x>\]$":"(z+x)",
     f"(?i)<{value}\+x>$":"z+x",
     f"(?i)<{value}\+y>$":"z+y",
+    f"(?i)<{value}\+s>$":"z+s",
     f"(?i)\[<{value}>\]$":"(z)",
     f"(?i)\[<{value}>\+y\]$":"(z)+y",
+    f"(?i)\[<{value}\+s>\+y\]$":"(z+s)+y",
 
     "(?i)A":"A",
     "(?i)X":"X",

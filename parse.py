@@ -275,7 +275,8 @@ class Interpreter:
                 elif c == ";":
                     next_line = line[i+1:]
                     break
-                elif c == ":" or c == " ":
+                #elif c == ":" or c == " ":
+                elif c == " ":
                     cur_token,tokens=append_token(cur_token,tokens)
                 elif c == ",":
                     cur_token,tokens=append_token(cur_token,tokens)
@@ -538,8 +539,19 @@ class Interpreter:
                             elif code == "r":
                                 output.append(("&rel",param[param_i]))
                                 param_i += 1
+                            elif code == "rl":
+                                output.append(("&rellow",param[param_i]))
+                                param_i += 1
+                            elif code == "rh":
+                                output.append(("&relhigh",param[param_i]))
+                                param_i += 1
                             elif code == "#":
                                 output.append(("&byte",param[param_i]))
+                                param_i += 1
+                            elif code == "#l":
+                                output.append(("&low",param[param_i]))
+                            elif code == "#h":
+                                output.append(("&high",param[param_i]))
                                 param_i += 1
                             elif code == "z":
                                 output.append(("&byte",param[param_i]))
@@ -548,6 +560,11 @@ class Interpreter:
                                 output.append(("&low",param[param_i]))
                             elif code == "ah":
                                 output.append(("&high",param[param_i]))
+                                param_i += 1
+                            elif code == "ah+":
+                                output.append(("&high",param[param_i]))
+                            elif code == "bk":
+                                output.append(("&bank",param[param_i]))
                                 param_i += 1
                             elif code == "NEXT":
                                 output.append(("&next",0))
@@ -606,12 +623,26 @@ class Interpreter:
                         cur_int.append(self.processExpression(d[1])&255)
                     elif d[0] == "&high":
                         cur_int.append((self.processExpression(d[1])>>8)&255)
+                    elif d[0] == "&bank":
+                        cur_int.append((self.processExpression(d[1])>>16)&255)
                     elif d[0] == "&rel":
                         v = self.processExpression(d[1])-(p[0][1]+len(cur_int)+1)
                         logging.debug(f"offset is {v}")
                         if v > 127 or v < -128:
                             self.error(f"Out of Range Branch {v}",p[2])
                         cur_int.append(v)
+                    elif d[0] == "&rellow":
+                        v = self.processExpression(d[1])-(p[0][1]+len(cur_int)+1)
+                        logging.debug(f"offset is {v}")
+                        if v > 0x8000 or v < -0x8000:
+                            self.error(f"Out of Range Long Branch {v}",p[2])
+                        cur_int.append(v&255)
+                    elif d[0] == "&relhigh":
+                        v = self.processExpression(d[1])-(p[0][1]+len(cur_int)+1)
+                        logging.debug(f"offset is {v}")
+                        if v > 0x8000 or v < -0x8000:
+                            self.error(f"Out of Range Long Branch {v}",p[2])
+                        cur_int.append(v>>8)
                     elif d[0] == "&bytes":
                         cur_int.extend(d[1])
                     elif d[0] == "&next":

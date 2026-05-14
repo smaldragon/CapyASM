@@ -207,6 +207,9 @@ opcodes.update({
 opcodes["adc"].update({
     "(z)":  [0x72,"z"]
 })
+opcodes["add"].update({
+    "(z)":  [0x18,0x72,"z"]
+})
 opcodes["and"].update({
     "(z)":  [0x32,"z"],
 })
@@ -251,6 +254,9 @@ opcodes["pul"].update({
 })
 opcodes["sbc"].update({
     "(z)":  [0xF2,"z"],
+})
+opcodes["sub"].update({
+    "(z)":  [0x38,0xF2,"z"],
 })
 opcodes["sta"].update({
     "(z)":  [0x92,"z"],
