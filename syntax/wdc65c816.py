@@ -131,6 +131,12 @@ opcodes.update({
         "r":    [0x62,"rl","rh"],
         "##":   [0x62,"#l","#h"],
     },
+
+    "psh:w"  :{
+        "#":    [0xF4,"al","ah"],
+        "z":    [0xD4,"z"],
+        "r":    [0x62,"rl","rh"],
+    },
     
     "ora:w":{   "#":    [0x09,"#l","#h"]    },
     "ora:b":{   "#":    [0x09,"#"]      },
@@ -178,6 +184,15 @@ opcodes.update({
     "clp"  :{   "#":    [0xC2,"#"]    },
     "sep"  :{   "#":    [0xE2,"#"]    },
     
+    "M16"   :{   "i":    [0xC2,0x20]},
+    "X16"   :{   "i":    [0xC2,0x10]},
+    "M16X16":{   "i":    [0xC2,0x30]},
+    
+    "M8"   :{   "i":    [0xE2,0x20]},
+    "X8"   :{   "i":    [0xE2,0x10]},
+    "M8X8" :{   "i":    [0xE2,0x30]},
+    
+    
     "tcd"  :{   "i":    [0x5B]  },  "tad"  :{   "i":    [0x5B]  },
     "tcs"  :{   "i":    [0x1B]  },  "tas"  :{   "i":    [0x1B]  },
     "tdc"  :{   "i":    [0x7B]  },  "tda"  :{   "i":    [0x7B]  },
@@ -199,3 +214,64 @@ opcodes.update({
 opcodes["clr"].update({   "#":    [0xC2,"#"]    })
 opcodes["set"].update({   "#":    [0xE2,"#"]    })
 
+opcodes["jsr"].update({
+    "(a+x)":    [0xFC,"al","ah"],
+})
+
+opcodes["lda:w"] = {**opcodes["lda"],**opcodes["lda:w"]}
+opcodes["lda:b"] = {**opcodes["lda"],**opcodes["lda:b"]}
+opcodes["ldx:w"] = {**opcodes["ldx"],**opcodes["ldx:w"]}
+opcodes["ldx:b"] = {**opcodes["ldx"],**opcodes["ldx:b"]}
+opcodes["ldy:w"] = {**opcodes["ldy"],**opcodes["ldy:w"]}
+opcodes["ldy:b"] = {**opcodes["ldy"],**opcodes["ldy:b"]}
+
+opcodes["sta:w"] = opcodes["sta"]
+opcodes["sta:b"] = opcodes["sta"]
+opcodes["stx:w"] = opcodes["stx"]
+opcodes["stx:b"] = opcodes["stx"]
+opcodes["sty:w"] = opcodes["sty"]
+opcodes["sty:b"] = opcodes["sty"]
+opcodes["stz:w"] = opcodes["stz"]
+opcodes["stz:b"] = opcodes["stz"]
+
+opcodes["adc:w"] = {**opcodes["adc"],**opcodes["adc:w"]}
+opcodes["adc:b"] = {**opcodes["adc"],**opcodes["adc:b"]}
+opcodes["add:w"] = {**opcodes["add"],**opcodes["add:w"]}
+opcodes["add:b"] = {**opcodes["add"],**opcodes["add:b"]}
+opcodes["sbc:w"] = {**opcodes["sbc"],**opcodes["sbc:w"]}
+opcodes["sbc:b"] = {**opcodes["sbc"],**opcodes["sbc:b"]}
+opcodes["sub:w"] = {**opcodes["sub"],**opcodes["sub:w"]}
+opcodes["sub:b"] = {**opcodes["sub"],**opcodes["sub:b"]}
+
+opcodes["cmp:w"] = {**opcodes["cmp"],**opcodes["cmp:w"]}
+opcodes["cmp:b"] = {**opcodes["cmp"],**opcodes["cmp:b"]}
+opcodes["cpx:w"] = {**opcodes["cpx"],**opcodes["cpx:w"]}
+opcodes["cpx:b"] = {**opcodes["cpx"],**opcodes["cpx:b"]}
+opcodes["cpy:w"] = {**opcodes["cpy"],**opcodes["cpy:w"]}
+opcodes["cpy:b"] = {**opcodes["cpy"],**opcodes["cpy:b"]}
+
+opcodes["and:w"] = {**opcodes["and"],**opcodes["and:w"]}
+opcodes["and:b"] = {**opcodes["and"],**opcodes["and:b"]}
+opcodes["eor:w"] = {**opcodes["eor"],**opcodes["eor:w"]}
+opcodes["eor:b"] = {**opcodes["eor"],**opcodes["eor:b"]}
+opcodes["xor:w"] = {**opcodes["xor"],**opcodes["xor:w"]}
+opcodes["xor:b"] = {**opcodes["xor"],**opcodes["xor:b"]}
+opcodes["ora:w"] = {**opcodes["ora"],**opcodes["ora:w"]}
+opcodes["ora:b"] = {**opcodes["ora"],**opcodes["ora:b"]}
+
+opcodes["bit:w"] = {**opcodes["bit"],**opcodes["bit:w"]}
+opcodes["bit:b"] = {**opcodes["bit"],**opcodes["bit:b"]}
+
+opcodes["asl:w"] = opcodes["asl"]
+opcodes["asl:b"] = opcodes["asl"]
+opcodes["lsr:w"] = opcodes["lsr"]
+opcodes["lsr:b"] = opcodes["lsr"]
+opcodes["rol:w"] = opcodes["rol"]
+opcodes["rol:b"] = opcodes["rol"]
+opcodes["ror:w"] = opcodes["ror"]
+opcodes["ror:b"] = opcodes["ror"]
+
+opcodes["tsb:w"] = opcodes["tsb"]
+opcodes["tsb:b"] = opcodes["tsb"]
+opcodes["trb:w"] = opcodes["trb"]
+opcodes["trb:b"] = opcodes["trb"]

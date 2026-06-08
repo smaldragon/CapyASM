@@ -25,6 +25,8 @@ ASM_OPS = [
     ".block",
     ".endblock",
     ".padpage",
+    ".rvar",
+    ".rorg",
 ]
 
 CPU_OPS = {}
@@ -86,6 +88,7 @@ class Interpreter:
         self.labels    = {}
         self.pc        = 0
         self.zpc	   = 0
+        self.rpc     = 0
         self.lastpc    = []
         self.blockpc   = []
         self.extension = ""
@@ -419,12 +422,31 @@ class Interpreter:
                         self.variables[symbols[1][0]] = self.zpc
                         self.zpc += mvar_size
                         if self.zpc > 256:
-                        	self.warning(f"ZP Variables exceed page size! ZPC={self.zpc}")
+                          self.warning(f"ZP Variables exceed page size! ZPC={self.zpc}")
                     except:
                         self.error("Unable to process variable")
                         sys.exit(2)
                 if opcode in (".zorg",".zporg"):
                     self.zpc = self.processExpression(symbols[2])
+                
+                # 6502 RAM Variables
+                if opcode in (".rvar"):
+                    try:
+                        mvar_size = 1
+                        if len(symbols) > 2:
+                            mvar_size = self.processExpression(symbols[2])
+                            
+                        if symbols[1][0] in self.values:
+                          self.warning(f'Variable/Value conflict "{symbols[1][0]}"')
+                        
+                        self.variables[symbols[1][0]] = self.rpc
+                        self.rpc += mvar_size
+                    except:
+                        self.error("Unable to process variable")
+                        sys.exit(2)
+                if opcode in (".rorg"):
+                    self.rpc = self.processExpression(symbols[2])
+                    
                 # Local Variables
                 if opcode == ".local":
                     key = "".join(self.cur_label)+':'+symbols[1][0]
