@@ -563,7 +563,7 @@ class Interpreter:
                                 param_i += 1
                             elif code == "rl":
                                 output.append(("&rellow",param[param_i]))
-                                param_i += 1
+                                #param_i += 1
                             elif code == "rh":
                                 output.append(("&relhigh",param[param_i]))
                                 param_i += 1
@@ -664,7 +664,7 @@ class Interpreter:
                         logging.debug(f"offset is {v}")
                         if v > 0x8000 or v < -0x8000:
                             self.error(f"Out of Range Long Branch {v}",p[2])
-                        cur_int.append(v>>8)
+                        cur_int.append((v>>8)&255)
                     elif d[0] == "&bytes":
                         cur_int.extend(d[1])
                     elif d[0] == "&next":

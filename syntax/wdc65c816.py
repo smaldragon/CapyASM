@@ -184,6 +184,7 @@ opcodes.update({
     "clp"  :{   "#":    [0xC2,"#"]    },
     "sep"  :{   "#":    [0xE2,"#"]    },
     
+    # REP/SEP Macros
     "M16"   :{   "i":    [0xC2,0x20]},
     "X16"   :{   "i":    [0xC2,0x10]},
     "M16X16":{   "i":    [0xC2,0x30]},
@@ -192,7 +193,16 @@ opcodes.update({
     "X8"   :{   "i":    [0xE2,0x10]},
     "M8X8" :{   "i":    [0xE2,0x30]},
     
+    "M8X16":{   "i":    [0xE2,0x20,0xC2,0x10]},
+    "M16X8":{   "i":    [0xC2,0x20,0xE2,0x10]},
     
+    "sev"  :{   "i":    [0xE2,0x40] },
+    "sen"  :{   "i":    [0xE2,0x80] },
+    "cln"  :{   "i":    [0xC2,0x80] },
+    "sez"  :{   "i":    [0xE2,0x02] },
+    "clz"  :{   "i":    [0xC2,0x02] },
+    
+    # New Transfer Instructions
     "tcd"  :{   "i":    [0x5B]  },  "tad"  :{   "i":    [0x5B]  },
     "tcs"  :{   "i":    [0x1B]  },  "tas"  :{   "i":    [0x1B]  },
     "tdc"  :{   "i":    [0x7B]  },  "tda"  :{   "i":    [0x7B]  },
@@ -211,8 +221,27 @@ opcodes.update({
     
 })
 
-opcodes["clr"].update({   "#":    [0xC2,"#"]    })
-opcodes["set"].update({   "#":    [0xE2,"#"]    })
+#"r":    [0x82,"rl","rh"],
+opcodes["bcc:l"].update({   "r":    [0xB0,0x03,0x82,"rl","rh"]    })
+opcodes["blt:l"].update({   "r":    [0xB0,0x03,0x82,"rl","rh"]    })
+opcodes["bcs:l"].update({   "r":    [0x90,0x03,0x82,"rl","rh"]    })
+opcodes["bge:l"].update({   "r":    [0x90,0x03,0x82,"rl","rh"]    })
+
+opcodes["bne:l"].update({   "r":    [0xF0,0x03,0x82,"rl","rh"]    })
+opcodes["bzc:l"].update({   "r":    [0xF0,0x03,0x82,"rl","rh"]    })
+opcodes["beq:l"].update({   "r":    [0xD0,0x03,0x82,"rl","rh"]    })
+opcodes["bzs:l"].update({   "r":    [0xD0,0x03,0x82,"rl","rh"]    })
+
+opcodes["bpl:l"].update({   "r":    [0x30,0x03,0x82,"rl","rh"]    })
+opcodes["bnc:l"].update({   "r":    [0x30,0x03,0x82,"rl","rh"]    })
+opcodes["bmi:l"].update({   "r":    [0x10,0x03,0x82,"rl","rh"]    })
+opcodes["bns:l"].update({   "r":    [0x10,0x03,0x82,"rl","rh"]    })
+
+opcodes["bvc:l"].update({   "r":    [0x70,0x03,0x82,"rl","rh"]    })
+opcodes["bvs:l"].update({   "r":    [0x50,0x03,0x82,"rl","rh"]    })
+
+opcodes["clr"].update({   "#":      [0x90,0x03,0x82,"rl","rh"]    })
+opcodes["set"].update({   "#":      [0x90,0x03,0x82,"rl","rh"]    })
 
 opcodes["jsr"].update({
     "(a+x)":    [0xFC,"al","ah"],
@@ -262,6 +291,8 @@ opcodes["ora:b"] = {**opcodes["ora"],**opcodes["ora:b"]}
 opcodes["bit:w"] = {**opcodes["bit"],**opcodes["bit:w"]}
 opcodes["bit:b"] = {**opcodes["bit"],**opcodes["bit:b"]}
 
+
+
 opcodes["asl:w"] = opcodes["asl"]
 opcodes["asl:b"] = opcodes["asl"]
 opcodes["lsr:w"] = opcodes["lsr"]
@@ -270,6 +301,12 @@ opcodes["rol:w"] = opcodes["rol"]
 opcodes["rol:b"] = opcodes["rol"]
 opcodes["ror:w"] = opcodes["ror"]
 opcodes["ror:b"] = opcodes["ror"]
+opcodes["inc:w"] = opcodes["inc"]
+opcodes["inc:b"] = opcodes["inc"]
+opcodes["dec:w"] = opcodes["dec"]
+opcodes["dec:b"] = opcodes["dec"]
+
+
 
 opcodes["tsb:w"] = opcodes["tsb"]
 opcodes["tsb:b"] = opcodes["tsb"]
