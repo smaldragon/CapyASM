@@ -654,7 +654,7 @@ class Interpreter:
                             self.error(f"Out of Range Branch {v}",p[2])
                         cur_int.append(v)
                     elif d[0] == "&rellow":
-                        v = self.processExpression(d[1])-(p[0][1]+len(cur_int)+1)
+                        v = self.processExpression(d[1])-(p[0][1]+len(cur_int)+2)
                         logging.debug(f"offset is {v}")
                         if v > 0x8000 or v < -0x8000:
                             self.error(f"Out of Range Long Branch {v}",p[2])
