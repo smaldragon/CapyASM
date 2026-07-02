@@ -1,6 +1,7 @@
 # Western Design Center 65c816
 from syntax.wdc65c02 import *
-
+registers.append("S")
+addr_tokens.append("+S")
 macro += """
     .val VECTORSn  $FFE4
     .val VECTORSe  $FFF4
@@ -122,14 +123,14 @@ opcodes.update({
     
     "pea"  :{
         "a":    [0xF4,"al","ah"],
-        "##":   [0xF4,"#l","#h"],
+        "#":   [0xF4,"#l","#h"],
     },
     "pei"  :{
         "z":    [0xD4,"z"],
     },
     "per"  :{
         "r":    [0x62,"rl","rh"],
-        "##":   [0x62,"#l","#h"],
+        "#":    [0x62,"#l","#h"],
     },
 
     "psh:w"  :{
@@ -220,6 +221,19 @@ opcodes.update({
     "xba"  :{   "i":    [0xEB]  },  "swa"  :{   "i":    [0xEB]  },
     
 })
+
+# Stack Relative Modes
+opcodes["ora"].update({"z+s":    [0x03,"z"],"(z+s)+y":[0x13,"z"]})
+opcodes["and"].update({"z+s":    [0x23,"z"],"(z+s)+y":[0x33,"z"]})
+opcodes["eor"].update({"z+s":    [0x43,"z"],"(z+s)+y":[0x53,"z"]})
+opcodes["xor"].update({"z+s":    [0x43,"z"],"(z+s)+y":[0x53,"z"]})
+opcodes["adc"].update({"z+s":    [0x63,"z"],"(z+s)+y":[0x73,"z"]})
+opcodes["add"].update({"z+s":    [0x18,0x63,"z"],"(z+s)+y":[0x18,0x73,"z"]})
+opcodes["sta"].update({"z+s":    [0x83,"z"],"(z+s)+y":[0x93,"z"]})
+opcodes["lda"].update({"z+s":    [0xA3,"z"],"(z+s)+y":[0xB3,"z"]})
+opcodes["cmp"].update({"z+s":    [0xC3,"z"],"(z+s)+y":[0xD3,"z"]})
+opcodes["sbc"].update({"z+s":    [0xE3,"z"],"(z+s)+y":[0xF3,"z"]})
+opcodes["sub"].update({"z+s":    [0x38,0xE3,"z"],"(z+s)+y":[0x38,0xF3,"z"]})
 
 #"r":    [0x82,"rl","rh"],
 opcodes["bcc:l"].update({   "r":    [0xB0,0x03,0x82,"rl","rh"]    })
